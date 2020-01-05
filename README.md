@@ -26,6 +26,17 @@ Features:
   - define the amount of simultanuous threads for rendering
   - the sea level 
 
+Limitations:
+
+- Everything in a map will be rendered: Labels (of cities ...), logos, compass rose and more
+- The landscape terrain is always absolute to the sea level
+  - Rivers, Roads will always be on sea level which results in canyons near mountains
+- You cannot build mountains without a correct hight map.
+  - Typical maps are not height maps but surface maps
+  - In such cases the Minecraft map will stay quite flat otherwise you will get 'peaks' near the coast and 'holes' in the mountains.  
+- You can place sapling but no trees: They have to grow (slowly).  
+  
+
 ## Input data
 
 The starting point for the converter is the configuration file `<directory>/config.properties` 
@@ -98,6 +109,10 @@ Or you configure the output directory directly to the Minecraft region folder!
 ## Tips
 
 ... t.b.c
+
+- How to convert your image to a index color raster image?
+- How to organize the color palette?
+- How to define the mapping tables?
 
 ## Compilation
 
