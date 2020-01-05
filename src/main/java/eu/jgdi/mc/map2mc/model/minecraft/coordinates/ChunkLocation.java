@@ -1,0 +1,50 @@
+package eu.jgdi.mc.map2mc.model.minecraft.coordinates;
+
+import eu.jgdi.mc.map2mc.model.raw.Tuple;
+import eu.jgdi.mc.map2mc.config.Constants;
+import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.FrameTransition;
+import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
+import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrameShifter;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ChunkLocation extends MinecraftLocation {
+
+    public ChunkLocation(int x, int z) {
+        super(x, z);
+    }
+
+    public ChunkLocation(int x, int z, ReferenceFrame referenceFrame) {
+        super(x, z, referenceFrame);
+    }
+
+    private static Map<FrameTransition, ReferenceFrameShifter> referenceShifters;
+    static {
+        Map<FrameTransition, ReferenceFrameShifter> map = new HashMap<>();
+
+        map.put(new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.REGION),
+                ChunkLocation::worldToRegionReferenceShifter);
+
+        referenceShifters = Collections.unmodifiableMap(map);
+    }
+
+    @Override
+    Map<FrameTransition, ReferenceFrameShifter> getReferenceShifters() {
+        return referenceShifters;
+    }
+
+    private static Tuple<MinecraftLocation> worldToRegionReferenceShifter(MinecraftLocation instance) {
+        int chunkX = instance.x % Constants.REGION_LEN_X;
+        int chunkZ = instance.z % Constants.REGION_LEN_Z;
+
+        int regionX = instance.x / Constants.REGION_LEN_X;
+        int regionZ = instance.z / Constants.REGION_LEN_Z;
+
+        return new Tuple<>(
+                new ChunkLocation(chunkX, chunkZ, ReferenceFrame.REGION),
+                new RegionLocation(regionX, regionZ)
+        );
+    }
+}
