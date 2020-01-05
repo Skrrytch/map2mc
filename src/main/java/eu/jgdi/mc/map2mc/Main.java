@@ -7,7 +7,7 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class Main {
 
-    private static final String ARG_DIRECTORY = "-directory=";
+    private static final String ARG_DIRECTORY = "-dir";
 
     private static Logger logger = Logger.logger();
 
@@ -47,7 +47,7 @@ public class Main {
         if (args.length == 0) {
             return true;
         }
-        if (Arrays.stream(args).noneMatch(arg -> arg.startsWith("-directory="))) {
+        if (Arrays.stream(args).noneMatch(arg -> arg.startsWith(ARG_DIRECTORY + "="))) {
             return true;
         }
         return false;
@@ -55,7 +55,7 @@ public class Main {
 
     private static void displayHelpAndExit() {
         System.out.println("Parameters");
-        System.out.println("  -directory=(path to directory)");
+        System.out.println("  " + ARG_DIRECTORY + "=(path to directory)");
         System.out.println();
         System.out.println("When the directory does not exists it will be created with some skeleton files");
         System.exit(0);
@@ -63,13 +63,13 @@ public class Main {
 
     private static File getDirectoryFromArgs(String[] args) {
         for (String arg : args) {
-            if (arg.startsWith(ARG_DIRECTORY)) {
-                String directory = arg.substring(ARG_DIRECTORY.length()).trim();
+            if (arg.startsWith(ARG_DIRECTORY + "=")) {
+                String directory = arg.substring(ARG_DIRECTORY.length() + 1).trim();
                 logger.info("Using directory: {0}", directory);
                 return new File(directory);
             }
         }
-        logger.error("Missing argument ''-directory''");
+        logger.error("Missing argument ''{0}''", ARG_DIRECTORY);
         System.exit(1);
         return null;
     }
