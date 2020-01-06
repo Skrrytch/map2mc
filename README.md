@@ -10,7 +10,7 @@ I wanted to use another approach but maybe that project is what you were looking
 
 This tool is tested with Minecraft Java-Edition!
 
-Features:
+__Features:__
 
 - Build a Minecraft map from a raster image (the terrain of the landscape)
   - Landscape terrain above and below water by mapping color indexes to landscape levels
@@ -26,16 +26,24 @@ Features:
   - define the amount of simultanuous threads for rendering
   - the sea level 
 
-Limitations:
+__Limitations:__
 
+- The dimensions of the minecraft world a 1:1 to the dimensions of the raster image: A 100x100 pixel image 
+  will produce a 100x100 block world
 - Everything in a map will be rendered: Labels (of cities ...), logos, compass rose and more
 - The landscape terrain is always absolute to the sea level
   - Rivers, Roads will always be on sea level which results in canyons near mountains
 - You cannot build mountains without a correct hight map.
   - Typical maps are not height maps but surface maps
-  - In such cases the Minecraft map will stay quite flat otherwise you will get 'peaks' near the coast and 'holes' in the mountains.  
+  - In such cases the Minecraft map will stay quite flat otherwise you will get 'peaks' near the coast 
+    and 'holes' in the mountains.  
 - You can place sapling but no trees: They have to grow (slowly).  
-  
+
+__Known Bugs / unready features:__
+
+- Currently blocks are rendered outside of the image (Bug, will be fixed soon)
+- This documentation (README) is not ready. I want to add illustrations and alot more details...
+- I don't have any example included yet. Will be coming soon ...  
 
 ## Input data
 
