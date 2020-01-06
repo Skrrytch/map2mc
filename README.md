@@ -14,7 +14,7 @@ Features:
 
 - Build a Minecraft map from a raster image (the terrain of the landscape)
   - Landscape terrain above and below water by mapping color indexes to landscape levels
-  - Speficy the depth of surface blocks (below comes stone, above water if under sea level)
+  - Specify the depth of surface blocks (below comes stone, above water if under sea level)
 - Using the same or a different raster image for the surface of the laadscape
   - Landscape surface by mapping color indexes to surface block type
   - Adding additional blocks like `saplings`, `lantern` etc. by definable percentage
