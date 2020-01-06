@@ -35,11 +35,12 @@ public class MapToMinecraftConverter {
         logger.info("Parsing done");
     }
 
-    public void renderWorld() {
+    public String renderWorld() {
         logger.info("Rendering minecraft world to {0} ...", worldRepo.getConfig().getOutputRegionDirectory());
         AnvilRenderer anvilRenderer = new AnvilRenderer(worldRepo);
         anvilRenderer.render();
         logger.info("Rendering minecraft world done.");
+        return worldRepo.getConfig().getOutputRegionDirectory().getAbsolutePath();
     }
 
     private static WorldRepository initializeWorld(File directory, boolean generateConfigOnly) {

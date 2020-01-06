@@ -29,9 +29,9 @@ public class Main {
         }
 
         converter.parseWorld();
-        converter.renderWorld();
+        String targetDirectory = converter.renderWorld();
 
-        logger.info("Finished.");
+        logger.info("Finished with ''{0}'', Minecraft world written to {1}", directory.getName(), targetDirectory);
     }
 
     private static void displayInstructionsAndExit(File directory) {

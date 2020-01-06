@@ -1,12 +1,13 @@
 package eu.jgdi.mc.map2mc.model.raw;
 
+import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 
-import eu.jgdi.mc.map2mc.utils.Logger;
 import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
+import eu.jgdi.mc.map2mc.utils.Logger;
 import eu.jgdi.mc.map2mc.utils.Pixels;
 
 public class WorldImageRaster extends WorldRaster {
@@ -17,6 +18,8 @@ public class WorldImageRaster extends WorldRaster {
 
     private final Raster surfaceRaster;
 
+    private final Raster mountainsRaster;
+
     private WorldRepository worldRepo;
 
     private WorldConfig config;
@@ -25,11 +28,12 @@ public class WorldImageRaster extends WorldRaster {
 
     private SurfaceCsvContent surfaceCsvContent;
 
-    public WorldImageRaster(Raster terrainRaster, Raster surfaceRaster, WorldRepository worldRepo) {
+    public WorldImageRaster(WorldRepository worldRepo, BufferedImage terrain, BufferedImage surface, BufferedImage mountains) {
         this.worldRepo = worldRepo;
         this.config = worldRepo.getConfig();
-        this.terrainRaster = terrainRaster;
-        this.surfaceRaster = surfaceRaster;
+        this.terrainRaster = terrain.getRaster();
+        this.surfaceRaster = surface.getRaster();
+        this.mountainsRaster = mountains != null ? mountains.getRaster() : null;
         this.terrainCsvContent = config.getTerrainCsvContent();
         this.surfaceCsvContent = config.getSurfaceCsvContent();
         float[] pixel = terrainRaster.getPixel(0, 0, (float[]) null);
@@ -54,14 +58,21 @@ public class WorldImageRaster extends WorldRaster {
     }
 
     @Override
-    public Info getTerrainInfo(int pixelX, int pixelY) {
+    public Info getPixelInfo(int pixelX, int pixelY) {
         float[] pixel = terrainRaster.getPixel(pixelX, pixelY, (float[]) null);
         byte terrainColorIndex = Pixels.getColorIndex(pixel);
-        byte surfaceColorIndex = terrainColorIndex;
+        byte surfaceColorIndex;
         if (surfaceRaster != terrainRaster) {
             pixel = surfaceRaster.getPixel(pixelX, pixelY, (float[]) null);
             surfaceColorIndex = Pixels.getColorIndex(pixel);
+        } else {
+            surfaceColorIndex = terrainColorIndex;
         }
-        return new Info(terrainColorIndex, surfaceColorIndex);
+        byte mountainColorIndex = 0;
+        if (mountainsRaster!=null) {
+            pixel = mountainsRaster.getPixel(pixelX, pixelY, (float[])null);
+            mountainColorIndex = Pixels.getColorIndex(pixel);
+        }
+        return new Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
     }
 }

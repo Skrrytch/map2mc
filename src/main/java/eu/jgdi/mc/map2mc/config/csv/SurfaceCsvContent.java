@@ -15,7 +15,11 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import eu.jgdi.mc.map2mc.utils.Logger;
+
 public class SurfaceCsvContent extends AbstractCsvContent {
+
+    private final static Logger logger = Logger.logger();
 
     private final static String HEADER_INDEX = "ColorIndex";
 
@@ -82,7 +86,7 @@ public class SurfaceCsvContent extends AbstractCsvContent {
         }
 
         public boolean hasAdditionalBlock() {
-            return additionalBlockId!=null;
+            return additionalBlockId != null;
         }
 
         public float getAdditionalBlockFrequency() {
@@ -123,21 +127,52 @@ public class SurfaceCsvContent extends AbstractCsvContent {
         try {
             CSVParser parser = csvFormat.parse(new FileReader(file));
             for (CSVRecord csvRecord : parser.getRecords()) {
-                String colorIndexValue = csvRecord.get(HEADER_INDEX);
+                byte colorIndexValue = readByte(csvRecord, HEADER_INDEX);
                 String blockId = csvRecord.get(HEADER_BLOCK);
-                String depthValue = csvRecord.get(HEADER_DEPTH);
-                String descrition = csvRecord.get(HEADER_DESCR);
+                byte depth = readByte(csvRecord, HEADER_DEPTH, (byte) 1);
+                String description = csvRecord.get(HEADER_DESCR);
                 Record record = new Record(
-                        Integer.parseInt(colorIndexValue.trim()),
+                        colorIndexValue,
                         blockId.trim(),
-                        Byte.parseByte(depthValue.trim()),
-                        descrition);
+                        depth,
+                        description);
                 map.put(record.getColorIndex(), record);
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "'", e);
         }
         return null;
+    }
+
+    private byte readByte(CSVRecord csvRecord, String name) {
+        try {
+            String value = csvRecord.get(name);
+            if (value == null || value.trim().isEmpty()) {
+                logger.error("Failed to read {0}: Value required!", name);
+                System.exit(1);
+            }
+            return Byte.parseByte(value.trim());
+        } catch (RuntimeException ex) {
+            String colorIndexValue = csvRecord.get(HEADER_INDEX);
+            logger.error("Failed to read {0} from record.", name, colorIndexValue);
+            System.exit(1);
+            return 0;
+        }
+    }
+
+    private byte readByte(CSVRecord csvRecord, String name, byte defaultValue) {
+        try {
+            String value = csvRecord.get(name);
+            if (value == null || value.trim().isEmpty()) {
+                return defaultValue;
+            }
+            return Byte.parseByte(value.trim());
+        } catch (RuntimeException ex) {
+            String colorIndexValue = csvRecord.get(HEADER_INDEX);
+            logger.error("Failed to read {0} from record with index {1}", name, colorIndexValue);
+            System.exit(1);
+            return defaultValue;
+        }
     }
 
     private void store(File file) {

@@ -84,7 +84,7 @@ public class WorldMapper {
                 BlockLocation blockLocation = (BlockLocation) locationTuple.first();
                 ChunkLocation chunkLocation = (ChunkLocation) locationTuple.second();
 
-                WorldRaster.Info info = raster.getTerrainInfo(pixelX, pixelY);
+                WorldRaster.Info info = raster.getPixelInfo(pixelX, pixelY);
 
                 ChunkBuilder chunkBuilder;
                 if (incompleteChunks.containsKey(chunkLocation)) {

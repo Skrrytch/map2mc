@@ -10,6 +10,25 @@ I wanted to use another approach but maybe that project is what you were looking
 
 This tool is tested with Minecraft Java-Edition!
 
+The following images of a self drawn map demonstrate the usage of a terrain bitmap, a surface bitmap and the resulting minecraft world.
+
+![alt text][selfdrawn_terrain]
+![alt text][selfdrawn_surface]
+![alt text][selfdrawn_mcworld]
+
+Notice
+
+- There are two csv files which defines the required mappings
+- The text "map2mc" in the surface bitmap results in different block time on the south island
+- Four different green colors in the surface bitmap define maddow with flowers, and different kind of trees. And yellow is 'sand'.
+- Colors in the surface bitmap which are not mapped to block types result in the block type 'dirt'  
+
+These files are part of the project in `./examples/selfdrawn/`
+
+[selfdrawn_surface]: doc/images/selfdrawn-surface.bmp "terrain bitmap"
+[selfdrawn_terrain]: doc/images/selfdrawn-terrain.bmp "surface bitmap"
+[selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "terrain bitmap"
+
 __Features:__
 
 - Build a Minecraft map from a raster image (the terrain of the landscape)
@@ -24,7 +43,8 @@ __Features:__
   - path to the raster images 
   - path to the CSV fles 
   - define the amount of simultanuous threads for rendering
-  - the sea level 
+  - the sea level
+  - the position (0,0) of the Minecraft world on the map (x/z Offset)
 
 __Limitations:__
 

@@ -10,17 +10,17 @@ import net.querz.nbt.mca.Chunk;
 import net.querz.nbt.mca.MCAFile;
 import net.querz.nbt.mca.MCAUtil;
 
-import eu.jgdi.mc.map2mc.config.WorldConfig;
-import eu.jgdi.mc.map2mc.model.raw.ChunkInfoMap;
-import eu.jgdi.mc.map2mc.model.raw.RegionInfoMap;
 import eu.jgdi.mc.map2mc.config.Constants;
-import eu.jgdi.mc.map2mc.utils.Logger;
+import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.model.minecraft.Block;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.ChunkLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
+import eu.jgdi.mc.map2mc.model.raw.ChunkInfoMap;
+import eu.jgdi.mc.map2mc.model.raw.RegionInfoMap;
+import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRegionRendererThread extends Thread {
 
@@ -33,6 +33,8 @@ public class AnvilRegionRendererThread extends Thread {
     private final CompoundTag stoneCompound;
 
     private final CompoundTag unknownCompound;
+
+    private final CompoundTag bedrockCompound;
 
     private long fileNumber;
 
@@ -61,6 +63,7 @@ public class AnvilRegionRendererThread extends Thread {
         this.waterCompound = worldRepo.getBlockCompoundId(Block.WATER.getBlockId());
         this.stoneCompound = worldRepo.getBlockCompoundId(Block.STONE.getBlockId());
         this.unknownCompound = worldRepo.getBlockCompoundId(Block.UNKNOWN.getBlockId());
+        this.bedrockCompound = worldRepo.getBlockCompoundId(Block.BEDROCK.getBlockId());
     }
 
     @Override
@@ -112,13 +115,14 @@ public class AnvilRegionRendererThread extends Thread {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
                 byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
                 byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
+                byte mountainIndex = chunkInfoMap.getMountainIndex(x, z);
                 TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
                 SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(surfaceIndex);
-                int levelOffset = terrainRecord != null ? terrainRecord.getLevel() : -seaLevel + 1;
-                String blockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "gold_block";
+                int levelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
+                String blockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "dirt";
 
-                byte surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 3;
-                int top = seaLevel + levelOffset;
+                byte surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
+                int top = seaLevel + levelOffset + mountainIndex;
                 CompoundTag block = worldRepo.getBlockCompoundId(blockId);
 
                 int currentLevel = 0;
@@ -127,14 +131,14 @@ public class AnvilRegionRendererThread extends Thread {
                     int surfaceCount = Math.max(0, top - stoneCount);
                     int waterDepth = Math.abs(levelOffset);
 
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount);
+                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + config.getBaseLevel());
                     currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
                     currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
                 } else { // above water
                     int stoneCount = Math.max(0, top - surfaceDepth);
                     int surfaceCount = Math.max(0, top - stoneCount);
 
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount);
+                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + config.getBaseLevel());
                     currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
 
                     // additional block, e.g. a sapling
@@ -154,16 +158,15 @@ public class AnvilRegionRendererThread extends Thread {
         return chunk;
     }
 
-    private int buildAdditionalBlock(int startLevel, Chunk chunk, int x, int z, CompoundTag additionalCompound) {
-        int currentLevel = startLevel;
-        chunk.setBlockStateAt(x, currentLevel++, z, additionalCompound, false);
-        return currentLevel;
+    private int buildAdditionalBlock(int currentLevel, Chunk chunk, int x, int z, CompoundTag additionalCompound) {
+        chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), additionalCompound, false);
+        return ++currentLevel;
     }
 
     private int buildWaterStack(int startLevel, Chunk chunk, int x, int z, int waterDepthCount) {
         int currentLevel = startLevel;
         for (int i = 0; i < waterDepthCount; i++) {
-            chunk.setBlockStateAt(x, currentLevel, z, waterCompound, false);
+            chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), waterCompound, false);
             currentLevel++;
         }
         return currentLevel;
@@ -172,7 +175,7 @@ public class AnvilRegionRendererThread extends Thread {
     private int buildSurfaceStack(int startLevel, Chunk chunk, int x, int z, int landSurfaceCount, CompoundTag surfaceBlock) {
         int currentLevel = startLevel;
         for (int i = 0; i < landSurfaceCount; i++) {
-            chunk.setBlockStateAt(x, currentLevel, z, surfaceBlock, false);
+            chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), surfaceBlock, false);
             currentLevel++;
         }
         return currentLevel;
@@ -181,8 +184,10 @@ public class AnvilRegionRendererThread extends Thread {
     private int buildStoneStack(int startLevel, Chunk chunk, int x, int z, int stoneCount) {
         int currentLevel = startLevel;
         for (int i = 0; i < stoneCount; i++) {
-            if (!config.getEmptyLevels().contains(currentLevel)) {
-                chunk.setBlockStateAt(x, currentLevel, z, stoneCompound, false);
+            if (i == 0) {
+                chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), bedrockCompound, false);
+            } else if (!config.getEmptyLevels().contains(currentLevel)) {
+                chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), stoneCompound, false);
             }
             currentLevel++;
         }

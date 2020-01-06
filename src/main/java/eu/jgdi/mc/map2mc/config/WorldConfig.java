@@ -10,20 +10,26 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
-import eu.jgdi.mc.map2mc.utils.Logger;
-import eu.jgdi.mc.map2mc.utils.SortedProperties;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
+import eu.jgdi.mc.map2mc.utils.Logger;
+import eu.jgdi.mc.map2mc.utils.SortedProperties;
 
 public class WorldConfig {
 
     private static final Logger logger = Logger.logger();
+
+    private final int xOffset;
+
+    private final int zOffset;
 
     private String configPath;
 
     private String fileTerrainImage;
 
     private String fileSurfaceImage;
+
+    private String fileMountainsImage;
 
     private String fileTerrainCsv;
 
@@ -39,6 +45,8 @@ public class WorldConfig {
 
     private final int seaLevel;
 
+    private final int baseLevel;
+
     private final int threadCount;
 
     public WorldConfig(File configFilePath, boolean initializeOnly) throws IOException {
@@ -51,14 +59,18 @@ public class WorldConfig {
         } catch (IOException ex) {
             logger.info("Config file does not exist. Creating one ...", configFilePath);
         }
-        this.seaLevel = (int) readLong(properties, "sea.level", 60);
+        this.seaLevel = (int) readLong(properties, "level.sea", 60);
+        this.baseLevel = (int) readLong(properties, "level.base", 0);
         this.threadCount = (int) readLong(properties, "options.threadCount", 4);
         this.fileTerrainImage = readString(properties, "file.terrain.image", "./terrain.bmp");
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");
         this.fileSurfaceCsv = readString(properties, "file.surface.csv", "./surface.csv");
+        this.fileMountainsImage = readString(properties, "file.mountains.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
+        this.xOffset = (int) readLong(properties, "position.offset.x", 0);
+        this.zOffset = (int) readLong(properties, "position.offset.z", 0);
 
         if (!configFileExists || initializeOnly) {
             FileOutputStream outStream = new FileOutputStream(configFilePath);
@@ -132,19 +144,27 @@ public class WorldConfig {
         }
     }
 
-    public String getFileTerrainImage() {
+    public String getTerrainImagePath() {
         return fileTerrainImage;
     }
 
-    public File getFileTerrainImageFile() {
-        return buildFile(fileTerrainImage);
-    }
-
-    public String getFileSurfaceImage() {
+    public String getSurfaceImagePath() {
         return fileSurfaceImage;
     }
 
-    public File getFileSurfaceImageFile() {
+    public String getMountainsImagePath() {
+        return fileMountainsImage;
+    }
+
+    public File getMountainsImageFile() {
+        return buildFile(fileMountainsImage);
+    }
+
+    public File getTerrainImageFile() {
+        return buildFile(fileTerrainImage);
+    }
+
+    public File getSurfaceImageFile() {
         return buildFile(fileSurfaceImage);
     }
 
@@ -172,6 +192,10 @@ public class WorldConfig {
         return seaLevel;
     }
 
+    public int getBaseLevel() {
+        return baseLevel;
+    }
+
     public List<Integer> getEmptyLevels() {
         return List.of(3, 4, 5, 7);
     }
@@ -179,7 +203,9 @@ public class WorldConfig {
     private String readString(Properties properties, String name, String defaultValue) {
         String value = properties.getProperty(name, null);
         if (value == null) {
-            properties.setProperty(name, defaultValue);
+            if (defaultValue != null) {
+                properties.setProperty(name, defaultValue);
+            }
             value = defaultValue;
         }
         logger.info("- {0} = {1}", name, value);
@@ -218,5 +244,13 @@ public class WorldConfig {
 
     public int getThreadCount() {
         return threadCount;
+    }
+
+    public int getOffsetX() {
+        return xOffset;
+    }
+
+    public int getOffsetZ() {
+        return zOffset;
     }
 }

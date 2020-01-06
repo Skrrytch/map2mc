@@ -2,3 +2,5 @@
 /target/
 /in/
 /.idea/
+*.mca
+*.tmp

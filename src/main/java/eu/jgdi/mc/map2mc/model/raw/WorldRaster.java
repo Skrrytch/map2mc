@@ -8,9 +8,12 @@ public abstract class WorldRaster {
 
         private byte surfaceIndex;
 
-        public Info(byte terrainIndex, byte surfaceIndex) {
+        private byte mountainIndex;
+
+        public Info(byte terrainIndex, byte surfaceIndex, byte mountainIndex) {
             this.terrainIndex = terrainIndex;
             this.surfaceIndex = surfaceIndex;
+            this.mountainIndex = mountainIndex;
         }
 
         public byte getTerrainIndex() {
@@ -20,11 +23,15 @@ public abstract class WorldRaster {
         public byte getSurfaceIndex() {
             return surfaceIndex;
         }
+
+        public byte getMountainIndex() {
+            return mountainIndex;
+        }
     }
 
     public abstract int getHeight();
 
     public abstract int getWidth();
 
-    public abstract Info getTerrainInfo(int pixelX, int pixelY);
+    public abstract Info getPixelInfo(int pixelX, int pixelY);
 }

@@ -5,7 +5,8 @@ public enum Block {
     DIRT("dirt"),
     STONE("stone"),
     UNKNOWN("gold_block"),
-    WATER("water");
+    WATER("water"),
+    BEDROCK("bedrock");
 
     private String blockId;
 

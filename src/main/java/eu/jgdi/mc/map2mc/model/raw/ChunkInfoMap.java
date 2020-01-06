@@ -11,12 +11,19 @@ public class ChunkInfoMap {
 
     private byte[][] surfaceIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
+    private byte[][] mountainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+
     private ChunkLocation location;
 
-    public ChunkInfoMap(ChunkLocation location, byte[][] terrainIndexField, byte[][] surfaceIndexField) {
+    public ChunkInfoMap(
+            ChunkLocation location,
+            byte[][] terrainIndexField,
+            byte[][] surfaceIndexField,
+            byte[][] mountainIndexField) {
         this.location = location;
         this.terrainIndexField = terrainIndexField;
         this.surfaceIndexField = surfaceIndexField;
+        this.mountainIndexField = mountainIndexField;
     }
 
     public ChunkInfoMap(ChunkLocation location, byte[] rawData) {
@@ -27,6 +34,7 @@ public class ChunkInfoMap {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
                 terrainIndexField[z][x] = RawRecord.getTerrainIndex(rawData, x, z);
                 surfaceIndexField[z][x] = RawRecord.getSurfaceIndex(rawData, x, z);
+                mountainIndexField[z][x] = RawRecord.getMountainIndex(rawData, x, z);
             }
         }
     }
@@ -43,6 +51,10 @@ public class ChunkInfoMap {
         return surfaceIndexField[z][x];
     }
 
+    public byte getMountainIndex(int x, int z) {
+        return mountainIndexField[z][x];
+    }
+
     public byte[] getBytes() {
         byte[] bytes = new byte[DATA_SZ];
 
@@ -50,6 +62,7 @@ public class ChunkInfoMap {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
                 RawRecord.putTerrainIndex(bytes, z, x, terrainIndexField[z][x]);
                 RawRecord.putSurfaceIndex(bytes, z, x, surfaceIndexField[z][x]);
+                RawRecord.putMountainIndex(bytes, z, x, mountainIndexField[z][x]);
             }
         }
 

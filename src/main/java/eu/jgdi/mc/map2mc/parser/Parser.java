@@ -71,11 +71,14 @@ public class Parser {
         WorldConfig config = worldRepo.getConfig();
         File fileToBeRead = null;
         try {
-            fileToBeRead = config.getFileTerrainImageFile();
+            fileToBeRead = config.getTerrainImageFile();
             BufferedImage terrainImage = ImageIO.read(fileToBeRead);
 
-            fileToBeRead = config.areTerrainAndSurfaceFileTheSame() ? null : config.getFileSurfaceImageFile();
+            fileToBeRead = config.areTerrainAndSurfaceFileTheSame() ? null : config.getSurfaceImageFile();
             BufferedImage surfaceImage = fileToBeRead != null ? ImageIO.read(fileToBeRead) : terrainImage;
+
+            fileToBeRead = config.getMountainsImageFile();
+            BufferedImage mountainsImage = fileToBeRead != null ? ImageIO.read(fileToBeRead) : null;
 
             int resX = 1, resY = 1;
             int xmin = -0;
@@ -84,7 +87,11 @@ public class Parser {
             int ymax = 16;
             logger.info("- Coordinates ({0},{1}) - ({2},{3})", xmin, ymin, xmax, ymax);
             WorldSection worldSection = new WorldSection(
-                    () -> new WorldImageRaster(terrainImage.getRaster(), surfaceImage.getRaster(), worldRepo),
+                    () -> new WorldImageRaster(
+                            worldRepo,
+                            terrainImage,
+                            surfaceImage,
+                            mountainsImage),
                     resX, resY,
                     new GeoArea(
                             GeodeticDatum.EUREF89,
