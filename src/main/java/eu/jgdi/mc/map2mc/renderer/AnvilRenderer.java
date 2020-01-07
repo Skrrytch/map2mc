@@ -2,19 +2,21 @@ package eu.jgdi.mc.map2mc.renderer;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.RegionLocation;
 import eu.jgdi.mc.map2mc.model.raw.RegionInfoMap;
-import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRenderer extends Renderer {
 
@@ -42,6 +44,7 @@ public class AnvilRenderer extends Renderer {
         logger.info("Processing {0} files, using {1} thread(s) ...", files.size(), config.getThreadCount());
         ExecutorService executor = Executors.newFixedThreadPool(config.getThreadCount());
         CountDownLatch latch = new CountDownLatch(files.size());
+        List<AnvilRegionRendererThread> threads = new ArrayList<>();
         for (File file : files) {
             try {
                 fileCount++;
@@ -51,7 +54,10 @@ public class AnvilRenderer extends Renderer {
                         Files.readAllBytes(file.toPath()));
 
                 // renderRegion(region, properties, outputDir);
-                executor.execute(new AnvilRegionRendererThread(file.getName(), latch, region, worldRepo));
+                AnvilRegionRendererThread anvilRegionRendererThread =
+                        new AnvilRegionRendererThread(file.getName(), latch, region, worldRepo);
+                threads.add(anvilRegionRendererThread);
+                executor.execute(anvilRegionRendererThread);
             } catch (Exception e) {
                 logger.error(e, "Failure while creating for AnvilRenderer thread #{0}: {1}", fileCount, e.getLocalizedMessage());
             }
@@ -64,6 +70,20 @@ public class AnvilRenderer extends Renderer {
             } else {
                 logger.info("Anvil rendering threads not yet finished. Giving up!");
                 executor.shutdownNow();
+            }
+            if (config.validateBlockTypes()) {
+                List<String> unexpectedBlocks = threads.stream().flatMap(thread -> thread.getUnexpectedBlockTypes().stream())
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList());
+                if (unexpectedBlocks.size() == 0) {
+                    logger.info("Validation info: All block types are well known.");
+                } else {
+                    logger.warn("Validation result: {0} unexpected block types, please review!", unexpectedBlocks.size());
+                    for (String unexpectedBlock : unexpectedBlocks) {
+                        logger.warn("  {0}", unexpectedBlock);
+                    }
+                }
             }
         } catch (InterruptedException e) {
             logger.error(e, "Failure while waiting for AnvilRenderer threads: {0}", e.getLocalizedMessage());

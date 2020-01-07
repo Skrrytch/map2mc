@@ -1,0 +1,97 @@
+ColorIndex,Level,RelativeTo,Description
+0,1,sea,Gebirge Randgebiet
+1,-1,sea,Schrift im Wasser
+2,-1,sea,Schrift im Wasser
+3,-1,sea,Wasser in Seen (flach)
+4,-2,sea,Wasser in Seen und Flüssen (tiefer)
+5,-1,sea,Wasser in Seen und Flüssen (flach)
+6,-1,sea,Wasser in Seen und Flüssen (flach)
+7,-2,sea,Wasser vereinzelt
+8,-3,sea,"Wasser in Seen und Flüssen (tief), teilw. Schrift"
+9,-1,sea,Schrift in Wasser und an Flüssen
+10,-1,sea,Schrift im Wasser
+11,-1,sea,Wasser in Seen und Flüssen (flach)
+12,-1,sea,Schrift im Wasser
+13,-1,sea,Wasser an der Küste (flach)
+14,-5,sea,Wasser im Meer (tief)
+15,-3,sea,Wasser im Meer (Rand zur Tiefe)
+16,1,sea,Wege
+17,-1,sea,Wasser an Küste und vor allem Schrift im Wasser
+18,-1,sea,Wasser an der Küste (flach)
+19,-1,sea,"Viel am Randgebiet von Gewässern/Küste, teilweise Wege"
+20,1,sea,Eher Wege als Wasser
+21,1,sea,Wandrandstreifen
+22,-1,sea,Wasser in Flüssen (flach)
+23,1,sea,Wandrandstreifen
+24,1,sea,Wandrandstreifen (punktuell)
+25,-1,sea,Wasser direkt am Rand von Wasser (sehr flach)
+26,1,sea,Waldmitte (klein)
+27,1,sea,Waldmitte
+28,1,sea,kommt im Ausschnitt nicht vor (vermutlch Wald)
+29,1,sea,"Wald (punktuell), teilweise Schrift"
+30,1,sea,Waldmitte
+31,1,sea,Waldrandstreifen
+32,1,sea,Waldrandstreifen
+33,1,sea,Wald
+34,1,sea,Waldrandstreifen
+35,1,sea,Waldrandstreifen
+36,1,sea,Waldmitte
+37,1,sea,Waldmitte
+38,1,sea,Waldrand und an Gewässern (punktuell)
+39,1,sea,Waldrand (punktuell)
+40,1,sea,Waldrand / Schrift (punktuell)
+41,1,sea,Waldrand (punktuell)
+42,1,sea,Gewässer- und Waldrand
+43,1,sea,Wiesen um Gewässer herum (Fläche)
+44,1,sea,Wiesen um Gewässer herum (Kleinteilige Flächen)
+45,1,sea,Wiesen um Gewässer und Waldrand
+46,1,sea,Wiesen um Gewässer herum (punktuell)
+47,1,sea,Waldrand und Schrift
+48,1,sea,Waldrand (punktuell)
+49,1,sea,Waldrand
+50,1,sea,Wege
+51,1,sea,Wiesen
+52,1,sea,Waldrand (punktuell)
+53,1,sea,Wiesen
+54,0,sea,Wiesenrand
+55,1,sea,"Wiesen, teilweise nur punktuell"
+56,1,sea,"Schrift im Gebirge, ansonsten nur punktuell bei Wegen"
+57,1,sea,Wiesen (punktuell)
+58,1,sea,Wiesen (kleine Flächen)
+59,1,sea,Wiesen (punktuell)
+60,1,sea,Wiesen (kleine Flächen)
+61,1,sea,Wiesen (Flächen)
+62,1,sea,Wiesen (Flächen) erhöht +2
+63,1,sea,Wiesen (Flächen) erhöht + 1
+64,1,sea,Wiese-zu-Flusstal-Übergang
+65,1,sea,Wiesen (Flächen) erhöht +1
+66,1,sea,Wiesen (Flächen) erhöht +1
+67,1,sea,"Verschiedenes, viel im Gebirge, teilweise an Wegen und Schrift"
+68,1,sea,Hochgelegene Waldflecken (punktuell)
+69,1,sea,Wiesen (Flächen) erhöht +4
+70,1,sea,Wiesen (Flächen) erhöht +3
+71,1,sea,Schrift und am Rande von Gebirgen
+72,1,sea,Verschiedene: Schrift und Gebirge (punktuell)
+73,1,sea,Gebirgsvorland
+74,1,sea,Gebirgspitzen (punktuell)
+75,1,sea,Schrift und Gebirge
+76,1,sea,Schrift und am Rande von Gebirgen
+77,1,sea,Schrift und am Rande von Gebirgen
+78,1,sea,Wüste und Gebirgsvorland (punktuell)
+79,1,sea,Am Rande von Gebirgen
+80,1,sea,Gebirgsvorland
+81,1,sea,Schrift und Gebirgsländer
+82,1,sea,"Wüste KOM, Rund um GOR, Gebirge, teilweise Küstennahe Hügel"
+83,1,sea,Am Rande der Wüste und des GOR-Vorlandes
+84,1,sea,Am Rande der Wüste und des GOR-Vorlandes
+85,1,sea,Gebirgsspitzen und GOR-Anstieg
+86,1,sea,Am Fuß von Gebirge und GOR-Vorland
+87,1,sea,Gebirgstäler und GOR-Vorland
+88,1,sea,Gebirgsspitzen (untere)
+89,1,sea,Gebirgstäler und Steilküste
+90,1,sea,Gebirgsspitzen (obere)
+91,1,sea,Gebirgsspitzen (obere) und teilw. Städte
+92,1,sea,Gebirgstäler und GOR-Anstieg
+93,1,sea,Gebirgs- und GOR-Anstieg
+94,1,sea,Gebirgsanstieg
+95,1,sea,"Wüste GOR, vereinzelt in Stadt"

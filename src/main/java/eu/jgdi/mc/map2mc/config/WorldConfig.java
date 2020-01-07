@@ -19,10 +19,6 @@ public class WorldConfig {
 
     private static final Logger logger = Logger.logger();
 
-    private final int xOffset;
-
-    private final int zOffset;
-
     private String configPath;
 
     private String fileTerrainImage;
@@ -49,6 +45,8 @@ public class WorldConfig {
 
     private final int threadCount;
 
+    private boolean validateBlockTypes;
+
     public WorldConfig(File configFilePath, boolean initializeOnly) throws IOException {
         boolean configFileExists = false;
         SortedProperties properties = new SortedProperties();
@@ -69,8 +67,7 @@ public class WorldConfig {
         this.fileMountainsImage = readString(properties, "file.mountains.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
-        this.xOffset = (int) readLong(properties, "position.offset.x", 0);
-        this.zOffset = (int) readLong(properties, "position.offset.z", 0);
+        this.validateBlockTypes = readBoolean(properties, "option.validate-blocks", true);
 
         if (!configFileExists || initializeOnly) {
             FileOutputStream outStream = new FileOutputStream(configFilePath);
@@ -157,7 +154,7 @@ public class WorldConfig {
     }
 
     public File getMountainsImageFile() {
-        return fileMountainsImage!=null ? buildFile(fileMountainsImage) : null;
+        return fileMountainsImage != null ? buildFile(fileMountainsImage) : null;
     }
 
     public File getTerrainImageFile() {
@@ -246,11 +243,7 @@ public class WorldConfig {
         return threadCount;
     }
 
-    public int getOffsetX() {
-        return xOffset;
-    }
-
-    public int getOffsetZ() {
-        return zOffset;
+    public boolean validateBlockTypes() {
+        return validateBlockTypes;
     }
 }

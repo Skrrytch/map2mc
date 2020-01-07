@@ -34,7 +34,7 @@ public class ChunkInfoMap {
 
         for (int z = 0; z < Constants.CHUNK_LEN_Z; z++) {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
-                flagField[z][x] =RawRecord.getFlag(rawData, x, z);
+                flagField[z][x] = RawRecord.getFlag(rawData, x, z);
                 terrainIndexField[z][x] = RawRecord.getTerrainIndex(rawData, x, z);
                 surfaceIndexField[z][x] = RawRecord.getSurfaceIndex(rawData, x, z);
                 mountainIndexField[z][x] = RawRecord.getMountainIndex(rawData, x, z);

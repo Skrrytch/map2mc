@@ -3,6 +3,8 @@ package eu.jgdi.mc.map2mc.renderer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
 import net.querz.nbt.CompoundTag;
@@ -23,6 +25,8 @@ import eu.jgdi.mc.map2mc.model.raw.RegionInfoMap;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRegionRendererThread extends Thread {
+
+    private Set<String> unexpectedBlockTypes = new TreeSet<>();
 
     private static final Logger logger = Logger.logger();
 
@@ -70,7 +74,7 @@ public class AnvilRegionRendererThread extends Thread {
     public void run() {
         try {
             renderRegion();
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             logger.error(e, "Failed to render in thread #{0}: {1}", fileName, e.getLocalizedMessage());
         } finally {
             latch.countDown();
@@ -115,9 +119,9 @@ public class AnvilRegionRendererThread extends Thread {
         for (int z = 0; z < Constants.CHUNK_LEN_Z; z++) {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
                 byte flag = chunkInfoMap.getFlagField(x, z);
-                boolean undefined = flag == 0;
+                boolean undefined = (flag == 0);
                 if (undefined) {
-                    // We have no information abount the blocks but the region is not finished
+                    // We have no information about the blocks but the region is not finished
                     // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
                     int currentLevel = 0;
                     currentLevel = buildStoneStack(currentLevel, chunk, x, z, baseLevel);
@@ -136,6 +140,10 @@ public class AnvilRegionRendererThread extends Thread {
                 int top = seaLevel + levelOffset + mountainLevel;
                 CompoundTag block = worldRepo.getBlockCompoundId(blockId);
 
+                if (config.validateBlockTypes() && !Block.EXPECTED_BLOCK_TYPES.contains(blockId)) {
+                    unexpectedBlockTypes.add(blockId);
+                }
+
                 int currentLevel = 0;
                 if (levelOffset < 0) { // under water
                     int stoneCount = Math.max(0, top - surfaceDepth);
@@ -146,6 +154,8 @@ public class AnvilRegionRendererThread extends Thread {
                     currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
                     currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
                 } else { // above water
+                    buildStoneStack(currentLevel, chunk, x, z, 15);
+
                     int stoneCount = Math.max(0, top - surfaceDepth);
                     int surfaceCount = Math.max(0, top - stoneCount);
 
@@ -157,7 +167,11 @@ public class AnvilRegionRendererThread extends Thread {
                     if (surfaceRecord != null && surfaceRecord.hasAdditionalBlock()) {
                         float frequency = surfaceRecord.getAdditionalBlockFrequency();
                         if (frequency >= 1f || Math.random() <= frequency) {
-                            CompoundTag additionalBlock = worldRepo.getBlockCompoundId(surfaceRecord.getAdditionalBlockId());
+                            String additionalBlockId = surfaceRecord.getAdditionalBlockId();
+                            if (config.validateBlockTypes() && !Block.EXPECTED_BLOCK_TYPES.contains(additionalBlockId)) {
+                                unexpectedBlockTypes.add(additionalBlockId);
+                            }
+                            CompoundTag additionalBlock = worldRepo.getBlockCompoundId(additionalBlockId);
                             currentLevel = buildAdditionalBlock(currentLevel, chunk, x, z, additionalBlock);
                         }
                     }
@@ -203,5 +217,9 @@ public class AnvilRegionRendererThread extends Thread {
             currentLevel++;
         }
         return currentLevel;
+    }
+
+    public Set<String> getUnexpectedBlockTypes() {
+        return unexpectedBlockTypes;
     }
 }

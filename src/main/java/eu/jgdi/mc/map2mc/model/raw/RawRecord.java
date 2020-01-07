@@ -11,10 +11,9 @@ public class RawRecord {
         bytes[offset] = data;
     }
 
-
     public static void putTerrainIndex(byte[] bytes, int z, int x, byte data) {
         int offset = SIZE * (x + z * Constants.CHUNK_LEN_Z);
-        bytes[offset+1] = data;
+        bytes[offset + 1] = data;
     }
 
     public static void putSurfaceIndex(byte[] bytes, int z, int x, byte data) {
@@ -34,7 +33,7 @@ public class RawRecord {
 
     public static byte getTerrainIndex(byte[] rawData, int x, int z) {
         int offset = SIZE * (x + z * Constants.CHUNK_LEN_Z);
-        return rawData[offset+1];
+        return rawData[offset + 1];
     }
 
     public static byte getSurfaceIndex(byte[] rawData, int x, int z) {
