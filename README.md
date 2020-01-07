@@ -25,59 +25,43 @@ Notice
 
 These files are part of the project in `./examples/selfdrawn/`
 
+You can find more details on the wiki page: https://github.com/Skrrytch/map2mc/wiki/Convert-maps-to-Minecraft-worlds
+
 [selfdrawn_surface]: doc/images/selfdrawn-surface.bmp "terrain bitmap"
 [selfdrawn_terrain]: doc/images/selfdrawn-terrain.bmp "surface bitmap"
 [selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "terrain bitmap"
 
 __Features:__
 
-- Build a Minecraft map from a raster image (the terrain of the landscape)
-  - Landscape terrain above and below water by mapping color indexes to landscape levels
-  - Specify the depth of surface blocks (below comes stone, above water if under sea level)
-- Using the same or a different raster image for the surface of the laadscape
-  - Landscape surface by mapping color indexes to surface block type
-  - Adding additional blocks like `saplings`, `lantern` etc. by definable percentage
-  - You can usage any block type
+- Build a Minecraft map by a *height map image* and a *surface image*
+  - The hight map image defines the elevation of the landscape / underwater world
+  - The surface image defines the surface block and additional items on it (like saplings)
+- Build a Minecraft map by a *'normal' map image* and an optional *mountain image*
+  - The map defines the underwater landscape as well as the surface blocks
+  - The mountain image is used for the elevation of the landscape (mostly mountains)
+- Use can ...
+  - map the color index of a height map or 'normal' map to the elevation level of the landscape
+  - map the color index of a surface image or 'normal' map to any block typ
+  - add additional blocks like `saplings`, `lantern` etc.  on top of the surface using a percentage value (random positioning)
 - Configuration of ...
   - output directories (you can render directly to a Minecraft `./saves/region` folder)
   - path to the raster images 
-  - path to the CSV fles 
+  - path to the CSV files 
   - define the amount of simultanuous threads for rendering
   - the sea level
   - the position (0,0) of the Minecraft world on the map (x/z Offset)
 
 __Limitations:__
 
-- The dimensions of the minecraft world a 1:1 to the dimensions of the raster image: A 100x100 pixel image 
-  will produce a 100x100 block world
+- The dimension of the images must be multiples of 512 (e.g. 1024x2048) because each region represents 512 x 512 blocks
+- The dimensions of the minecraft world a 1:1 to the dimensions of the raster image: A 512x512 pixel image 
+  will produce a 512x512 block world
 - Everything in a map will be rendered: Labels (of cities ...), logos, compass rose and more
-- The landscape terrain is always absolute to the sea level
-  - Rivers, Roads will always be on sea level which results in canyons near mountains
-- You cannot build mountains without a correct hight map.
-  - Typical maps are not height maps but surface maps
-  - In such cases the Minecraft map will stay quite flat otherwise you will get 'peaks' near the coast 
-    and 'holes' in the mountains.  
-- You can place sapling but no trees: They have to grow (slowly).  
+- You can place sapling but no trees: They have to grow.  
 
 __Known Bugs / unready features:__
 
-- Currently blocks are rendered outside of the image (Bug, will be fixed soon)
 - This documentation (README) is not ready. I want to add illustrations and alot more details...
-- I don't have any example included yet. Will be coming soon ...  
-
-## Input data
-
-The starting point for the converter is the configuration file `<directory>/config.properties` 
-with the following possibilities:
-
-- A raster __image for terrain__ definition: The elevation of the landscape.
-- A __CSV file for terrain__ information mapping the color index to elevation levels.
-- An __optional raster image for surface__ definition: The block types of the landscape.
-- A __CSV file for surface__ information mapping the color index to block types.
-- An output directory for __temporary files__.
-- An output directory for __the Minecraft map files__.
-
-These directories can be configured in the configuration file.  
 
 ## Usage
 
@@ -91,56 +75,19 @@ where `data directory` (in the following referenced by <directory>) is the path 
 containing configuration as well as surface and terrain data. 
 
 When the given directory does not exist then the following files are generated automatically and 
-the programm stops:
+the program stops:
 
 - a config file with default values (`<directory>/config.properties`)
 - two empty CSV files with just the headers (`<directory>/terrain.csv` and `<directory>/surface.csv`)
 - empty output directories (`<directory>/tmp/` and `<directory>/region/`)
 
-Then you have to create a raster imager of your map with an indexed color palette (*.bmp). 
-See tips section for additional information. In most cases you need a mapping file for the terrain (`terrain.csv`)
-where each color index must be mapped to a landscape elevation level, releative to the sea level. 
+Then you have to create a new or use an existing raster image of your map with an indexed color palette (*.bmp). 
+See tips section in the wiki for additional information. 
 
-### Terrain raster image (BMP)
+In most cases you need a mapping file for the terrain (`terrain.csv`)
+where each color index must be mapped to a landscape elevation level, relative to the sea level. 
 
-You need a raster image (e.g. in BMP-format) with an indexed color palette where each used color is 
-defined by an index. You may use Gimp (https://www.gimp.org) to build such an image with a useful color 
-palette (see tips section for details).
-
-The best fitting image for the terrain uses colors to define the landscape elevation (a height map).
-But most typical maps use colors to define the surface of a landscape.   
-
-... t.b.c
-
-### Terrain mapping file (CSV)
-
-... t.b.c   
-
-### Surface raster image (BMP)
-
-... t.b.c
-
-### Surface mapping file (CSV)
-
-... t.b.c   
-
-## Using the rendered map in Minecraft
-
-To use the rendered map in Minecraft, copy and paste files from `region` into:
-
-```
-<minecraft_game_directory>/saves/<your_save>/region/
-```
-
-Or you configure the output directory directly to the Minecraft region folder!
-
-## Tips
-
-... t.b.c
-
-- How to convert your image to a index color raster image?
-- How to organize the color palette?
-- How to define the mapping tables?
+More information about how to build the images and CSV-content can be found in the wiki.
 
 ## Compilation
 
@@ -154,3 +101,6 @@ or use `mvn compile` to skip generating JAR.
 [Querz/NBT](https://github.com/Querz/NBT)
 
 
+
+
+[Wiki]: https://github.com/Skrrytch/map2mc/wiki/Convert-maps-to-Minecraft-worlds
