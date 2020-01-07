@@ -1,6 +1,7 @@
 package eu.jgdi.mc.map2mc.renderer;
 
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.RegionLocation;
+import eu.jgdi.mc.map2mc.utils.Logger;
 
 import java.io.File;
 import java.util.HashMap;
@@ -10,12 +11,14 @@ import java.util.regex.Matcher;
 
 public abstract class Renderer {
 
+    protected final static Logger logger = Logger.logger();
+
     public abstract void render();
 
     /**
      * Maps all <i>valid</i> intermediate output files to a {@link RegionLocation}
      */
-    Map<File, RegionLocation> mapToRegions(List<File> intermediateFiles) {
+    protected Map<File, RegionLocation> mapToRegions(List<File> intermediateFiles) {
 
         Map<File, RegionLocation> map = new HashMap<>();
 

@@ -157,7 +157,7 @@ public class WorldConfig {
     }
 
     public File getMountainsImageFile() {
-        return buildFile(fileMountainsImage);
+        return fileMountainsImage!=null ? buildFile(fileMountainsImage) : null;
     }
 
     public File getTerrainImageFile() {

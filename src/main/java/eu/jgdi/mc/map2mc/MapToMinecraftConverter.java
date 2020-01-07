@@ -29,7 +29,14 @@ public class MapToMinecraftConverter {
     }
 
     public void parseWorld() {
-        logger.info("Parsing world to intermediate output ''{0}''...", worldRepo.getConfig().getOutputTmpDirectory());
+        logger.info("Parsing world ...", worldRepo.getConfig().getOutputTmpDirectory());
+        logger.info("- Temporary output: ''{0}''...", worldRepo.getConfig().getOutputTmpDirectory());
+        if (worldRepo.getConfig().getMountainsImagePath() != null) {
+            logger.info("- Using mountain image file");
+        }
+        if (!worldRepo.getConfig().areTerrainAndSurfaceFileTheSame()) {
+            logger.info("- Using specific surface image file");
+        }
         Parser parser = new Parser(worldRepo);
         parser.parseWorld();
         logger.info("Parsing done");

@@ -1,14 +1,14 @@
 package eu.jgdi.mc.map2mc.model.minecraft.coordinates;
 
-import eu.jgdi.mc.map2mc.model.raw.Tuple;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import eu.jgdi.mc.map2mc.config.Constants;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.FrameTransition;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrameShifter;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import eu.jgdi.mc.map2mc.model.raw.Tuple;
 
 public class ChunkLocation extends MinecraftLocation {
 
@@ -21,10 +21,12 @@ public class ChunkLocation extends MinecraftLocation {
     }
 
     private static Map<FrameTransition, ReferenceFrameShifter> referenceShifters;
+
     static {
         Map<FrameTransition, ReferenceFrameShifter> map = new HashMap<>();
 
-        map.put(new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.REGION),
+        map.put(
+                new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.REGION),
                 ChunkLocation::worldToRegionReferenceShifter);
 
         referenceShifters = Collections.unmodifiableMap(map);

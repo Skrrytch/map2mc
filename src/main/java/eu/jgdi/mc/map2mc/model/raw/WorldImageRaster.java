@@ -38,15 +38,19 @@ public class WorldImageRaster extends WorldRaster {
         this.surfaceCsvContent = config.getSurfaceCsvContent();
         float[] pixel = terrainRaster.getPixel(0, 0, (float[]) null);
         if (pixel.length > 1) {
-            throw new IllegalArgumentException("Image is not index based.");
+            throw new IllegalArgumentException("Terrain image is not index based.");
         }
         pixel = surfaceRaster.getPixel(0, 0, (float[]) null);
         if (pixel.length > 1) {
-            throw new IllegalArgumentException("Block type image is not index based.");
+            throw new IllegalArgumentException("Surface image is not index based.");
+        }
+        if (mountainsRaster!=null) {
+            pixel = mountainsRaster.getPixel(0, 0, (float[]) null);
+            if (pixel.length > 1) {
+                throw new IllegalArgumentException("Mountain image is not index based.");
+            }
         }
     }
-
-    private static float UNDEFINED_PIXEL = 4_294_967_296f;
 
     public int getWidth() {
         return terrainRaster.getWidth();
@@ -69,8 +73,8 @@ public class WorldImageRaster extends WorldRaster {
             surfaceColorIndex = terrainColorIndex;
         }
         byte mountainColorIndex = 0;
-        if (mountainsRaster!=null) {
-            pixel = mountainsRaster.getPixel(pixelX, pixelY, (float[])null);
+        if (mountainsRaster != null) {
+            pixel = mountainsRaster.getPixel(pixelX, pixelY, (float[]) null);
             mountainColorIndex = Pixels.getColorIndex(pixel);
         }
         return new Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);

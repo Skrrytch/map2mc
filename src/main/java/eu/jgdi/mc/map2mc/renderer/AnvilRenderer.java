@@ -18,8 +18,6 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRenderer extends Renderer {
 
-    private static Logger logger = Logger.logger();
-
     private WorldRepository worldRepo;
 
     private WorldConfig config;
@@ -53,7 +51,7 @@ public class AnvilRenderer extends Renderer {
                         Files.readAllBytes(file.toPath()));
 
                 // renderRegion(region, properties, outputDir);
-                executor.execute(new AnvilRegionRendererThread(fileCount, latch, region, worldRepo));
+                executor.execute(new AnvilRegionRendererThread(file.getName(), latch, region, worldRepo));
             } catch (Exception e) {
                 logger.error(e, "Failure while creating for AnvilRenderer thread #{0}: {1}", fileCount, e.getLocalizedMessage());
             }

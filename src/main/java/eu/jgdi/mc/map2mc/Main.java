@@ -37,6 +37,7 @@ public class Main {
     private static void displayInstructionsAndExit(File directory) {
         logger.info("Directory initialized: {0}", directory.getAbsolutePath());
         logger.info("Finished with initializing.");
+        logger.info("- Use images with width and height which are multiple of 512");
         logger.info("- Copy you map to {0}/terrain.bmp", directory.getAbsolutePath());
         logger.info("- Fill at least the terrain definition file: {0}/terrain.csv", directory.getAbsolutePath());
         logger.info("- Modify configuration file to your need: {0}/config.properties", directory.getAbsolutePath());

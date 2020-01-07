@@ -48,7 +48,6 @@ public class Parser {
             Tuple<List<ChunkBuilder>> chunkBuilders = WorldMapper.toChunkBuilders(world, worldSection, incompleteChunks);
             List<ChunkBuilder> completeChunks = chunkBuilders.first();
             List<ChunkBuilder> intersectingChunks = chunkBuilders.second();
-            logger.debug("- {0} complete and {1} incomplete chunks", completeChunks.size(), incompleteChunks.size());
             List<ChunkBuilder> updatedChunks = incompleteChunks.values().stream()
                     .filter(ChunkBuilder::isComplete)
                     .collect(Collectors.toList());
@@ -63,7 +62,12 @@ public class Parser {
 
             ioWriter.writeFiles(completeChunks);
 
-            logger.info("  Parsed " + completeChunks.size() + " chunks, " + intersectingChunks.size() + " on hold");
+            logger.info("  Parsed " + completeChunks.size() + " complete chunks");
+            if (intersectingChunks.size() > 0) {
+                logger.warn(
+                        "{0} chunks not complete and will not be rendered. Make sure that your images have width and height " +
+                                "dimensions which are multiple of 16!");
+            }
         }
     }
 
@@ -81,8 +85,8 @@ public class Parser {
             BufferedImage mountainsImage = fileToBeRead != null ? ImageIO.read(fileToBeRead) : null;
 
             int resX = 1, resY = 1;
-            int xmin = -0;
-            int ymin = -0;
+            int xmin = 0;
+            int ymin = 0;
             int xmax = 16;
             int ymax = 16;
             logger.info("- Coordinates ({0},{1}) - ({2},{3})", xmin, ymin, xmax, ymax);

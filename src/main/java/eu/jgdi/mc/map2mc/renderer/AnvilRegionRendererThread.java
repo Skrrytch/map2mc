@@ -36,7 +36,7 @@ public class AnvilRegionRendererThread extends Thread {
 
     private final CompoundTag bedrockCompound;
 
-    private long fileNumber;
+    private String fileName;
 
     private RegionInfoMap regionInfoMap;
 
@@ -49,12 +49,12 @@ public class AnvilRegionRendererThread extends Thread {
     private SurfaceCsvContent surfaceCsvContent;
 
     public AnvilRegionRendererThread(
-            long fileCount,
+            String fileName,
             CountDownLatch latch,
             RegionInfoMap regionInfoMap,
             WorldRepository worldRepo) {
         this.latch = latch;
-        this.fileNumber = fileCount;
+        this.fileName = fileName;
         this.regionInfoMap = regionInfoMap;
         this.worldRepo = worldRepo;
         this.config = worldRepo.getConfig();
@@ -71,7 +71,7 @@ public class AnvilRegionRendererThread extends Thread {
         try {
             renderRegion();
         } catch (IOException e) {
-            logger.error(e, "Failed to render in thread #{0}: {1}", fileNumber, e.getLocalizedMessage());
+            logger.error(e, "Failed to render in thread #{0}: {1}", fileName, e.getLocalizedMessage());
         } finally {
             latch.countDown();
         }
@@ -83,7 +83,7 @@ public class AnvilRegionRendererThread extends Thread {
         int regionZ = regionInfoMap.getLocation().getZ();
         MCAFile region = new MCAFile(regionX, regionZ);
 
-        long chunkSum = Constants.REGION_LEN_Z * Constants.REGION_LEN_X;
+        long chunkSize = Constants.REGION_LEN_Z * Constants.REGION_LEN_X;
         long chunkCount = 0;
         for (int z = 0; z < Constants.REGION_LEN_Z; z++) {
             for (int x = 0; x < Constants.REGION_LEN_X; x++) {
@@ -95,7 +95,7 @@ public class AnvilRegionRendererThread extends Thread {
 
                 region.setChunk(x, z, chunk);
                 if (chunkCount % 256 == 0) {
-                    logger.info("  File {0}: Chunk {1} of {2} done", fileNumber, chunkCount, chunkSum);
+                    logger.info("  Region file ''{0}'': Chunk {1} of {2} done", fileName, chunkCount, chunkSize);
                 }
             }
         }
@@ -109,20 +109,31 @@ public class AnvilRegionRendererThread extends Thread {
 
         Chunk chunk = Chunk.newChunk();
 
+        int baseLevel = config.getBaseLevel();
         int seaLevel = config.getSeaLevel();
 
         for (int z = 0; z < Constants.CHUNK_LEN_Z; z++) {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
+                byte flag = chunkInfoMap.getFlagField(x, z);
+                boolean undefined = flag == 0;
+                if (undefined) {
+                    // We have no information abount the blocks but the region is not finished
+                    // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
+                    int currentLevel = 0;
+                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, baseLevel);
+                    currentLevel = buildWaterStack(currentLevel, chunk, x, z, seaLevel);
+                    continue;
+                }
                 byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
                 byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
-                byte mountainIndex = chunkInfoMap.getMountainIndex(x, z);
+                byte mountainLevel = chunkInfoMap.getMountainIndex(x, z);
                 TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
                 SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(surfaceIndex);
                 int levelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
                 String blockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "dirt";
 
                 byte surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
-                int top = seaLevel + levelOffset + mountainIndex;
+                int top = seaLevel + levelOffset + mountainLevel;
                 CompoundTag block = worldRepo.getBlockCompoundId(blockId);
 
                 int currentLevel = 0;
@@ -131,14 +142,14 @@ public class AnvilRegionRendererThread extends Thread {
                     int surfaceCount = Math.max(0, top - stoneCount);
                     int waterDepth = Math.abs(levelOffset);
 
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + config.getBaseLevel());
+                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
                     currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
                     currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
                 } else { // above water
                     int stoneCount = Math.max(0, top - surfaceDepth);
                     int surfaceCount = Math.max(0, top - stoneCount);
 
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + config.getBaseLevel());
+                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
                     currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
 
                     // additional block, e.g. a sapling
@@ -159,14 +170,14 @@ public class AnvilRegionRendererThread extends Thread {
     }
 
     private int buildAdditionalBlock(int currentLevel, Chunk chunk, int x, int z, CompoundTag additionalCompound) {
-        chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), additionalCompound, false);
+        chunk.setBlockStateAt(x, currentLevel, z, additionalCompound, false);
         return ++currentLevel;
     }
 
     private int buildWaterStack(int startLevel, Chunk chunk, int x, int z, int waterDepthCount) {
         int currentLevel = startLevel;
         for (int i = 0; i < waterDepthCount; i++) {
-            chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), waterCompound, false);
+            chunk.setBlockStateAt(x, currentLevel, z, waterCompound, false);
             currentLevel++;
         }
         return currentLevel;
@@ -175,7 +186,7 @@ public class AnvilRegionRendererThread extends Thread {
     private int buildSurfaceStack(int startLevel, Chunk chunk, int x, int z, int landSurfaceCount, CompoundTag surfaceBlock) {
         int currentLevel = startLevel;
         for (int i = 0; i < landSurfaceCount; i++) {
-            chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), surfaceBlock, false);
+            chunk.setBlockStateAt(x, currentLevel, z, surfaceBlock, false);
             currentLevel++;
         }
         return currentLevel;
@@ -185,9 +196,9 @@ public class AnvilRegionRendererThread extends Thread {
         int currentLevel = startLevel;
         for (int i = 0; i < stoneCount; i++) {
             if (i == 0) {
-                chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), bedrockCompound, false);
+                chunk.setBlockStateAt(x, currentLevel, z, bedrockCompound, false);
             } else if (!config.getEmptyLevels().contains(currentLevel)) {
-                chunk.setBlockStateAt(x - config.getOffsetX(), currentLevel, z - config.getOffsetZ(), stoneCompound, false);
+                chunk.setBlockStateAt(x, currentLevel, z, stoneCompound, false);
             }
             currentLevel++;
         }
