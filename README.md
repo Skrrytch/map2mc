@@ -60,7 +60,7 @@ a normal map and a mountain map with the resulting minecraft world.
 ![Mountains Map][realmap_mountains]
 ![Minecraft][realmap_mcworld]
 
-[realmap_terrain]: doc/images/realmap-terrain-small.bmp "normal mapo"
+[realmap_terrain]: doc/images/realmap-terrain-small.bmp "normal map"
 [realmap_mountains]: doc/images/realmap-mountains-small.bmp "mountains map"
 [realmap_mcworld]: doc/images/realmap-mcworld-small.png "Minecraft"
 
