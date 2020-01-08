@@ -16,16 +16,7 @@ The following images of a self drawn map demonstrate the usage of a terrain bitm
 ![alt text][selfdrawn_surface]
 ![alt text][selfdrawn_mcworld]
 
-Notice
-
-- There are two csv files which defines the required mappings
-- The text "map2mc" in the surface bitmap results in different block time on the south island
-- Four different green colors in the surface bitmap define maddow with flowers, and different kind of trees. And yellow is 'sand'.
-- Colors in the surface bitmap which are not mapped to block types result in the block type 'dirt'  
-
-These files are part of the project in `./examples/selfdrawn/`
-
-You can find more details on the wiki page: https://github.com/Skrrytch/map2mc/wiki/Convert-maps-to-Minecraft-worlds
+You can find more details on the wiki page: https://github.com/Skrrytch/map2mc/wiki
 
 [selfdrawn_surface]: doc/images/selfdrawn-surface.bmp "terrain bitmap"
 [selfdrawn_terrain]: doc/images/selfdrawn-terrain.bmp "surface bitmap"
@@ -33,61 +24,45 @@ You can find more details on the wiki page: https://github.com/Skrrytch/map2mc/w
 
 __Features:__
 
-- Build a Minecraft map by a *height map image* and a *surface image*
-  - The hight map image defines the elevation of the landscape / underwater world
-  - The surface image defines the surface block and additional items on it (like saplings)
-- Build a Minecraft map by a *'normal' map image* and an optional *mountain image*
-  - The map defines the underwater landscape as well as the surface blocks
-  - The mountain image is used for the elevation of the landscape (mostly mountains)
-- Use can ...
-  - map the color index of a height map or 'normal' map to the elevation level of the landscape
-  - map the color index of a surface image or 'normal' map to any block typ
-  - add additional blocks like `saplings`, `lantern` etc.  on top of the surface using a percentage value (random positioning)
-- Configuration of ...
-  - output directories (you can render directly to a Minecraft `./saves/region` folder)
-  - path to the raster images 
-  - path to the CSV files 
-  - define the amount of simultanuous threads for rendering
-  - the sea level
-  - the position (0,0) of the Minecraft world on the map (x/z Offset)
+- Use a real height map to create the Minecraft landscape
+  - Each color in the palette determines a different height. Use a mapping file to determine this height yourself.
+  - Add a second (surface) map to determine the landscape types (block types).
+- Use a typical map to create the Minecraft landscape
+  - Use a mapping file to assign a height to each color.
+  - Add a mountain map to manipulate the heights on land
+- About landscape heights:
+  - Define the depth in the water and the heights on land
+  - Define the height of the general water surface
+- About block types:
+  - Define the depth of the block types on the surface, e.g. 3 sand (and then stone)
+  - Add items like grass, oak_sapling, orange_tulip, lantern ...
+  - Specify probabilities with which the items are added
+- Calculate the world with several threads in parallel
+- Save the Minecraft world directly to the 'saves' folder
 
-__Limitations:__
+__Limitations: __
 
-- The dimension of the images must be multiples of 512 (e.g. 1024x2048) because each region represents 512 x 512 blocks
-- The dimensions of the minecraft world a 1:1 to the dimensions of the raster image: A 512x512 pixel image 
-  will produce a 512x512 block world
-- Everything in a map will be rendered: Labels (of cities ...), logos, compass rose and more
-- You can place sapling but no trees: They have to grow.  
+- Getting the best out of existing maps is not easy.
+- The height and width of the maps (in pixels) must be multiples of 512
+- A pixel is mapped 1: 1 to a Minecraft block
+- The zero point of the Minecraft world is always the top left corner of the map
+- All texts are also rendered in the world
+- You can put 'saplings' but no trees. These have to grow first! (but there is a trick)
 
-__Known Bugs / unready features:__
+## Running the application
 
-- This documentation (README) is not ready. I want to add illustrations and alot more details...
-
-## Usage
-
-Run the program:
+map2mc only needs one directory for execution, in which all data including a configuration file are then available:
 
 ```
 java -jar map2mc-<VERSION>.jar -dir=<data directory>
 ```
 
-where `data directory` (in the following referenced by <directory>) is the path to the folder 
-containing configuration as well as surface and terrain data. 
+If the directory does __not exist__, map2mc will create the directory, create an initial configuration file and empty mapping files. This is a good start for your own map.
 
-When the given directory does not exist then the following files are generated automatically and 
-the program stops:
+If the directory __exists__, map2mc expects at least one configuration file `config.properties` as well as the necessary image and mapping files.
 
-- a config file with default values (`<directory>/config.properties`)
-- two empty CSV files with just the headers (`<directory>/terrain.csv` and `<directory>/surface.csv`)
-- empty output directories (`<directory>/tmp/` and `<directory>/region/`)
-
-Then you have to create a new or use an existing raster image of your map with an indexed color palette (*.bmp). 
-See tips section in the wiki for additional information. 
-
-In most cases you need a mapping file for the terrain (`terrain.csv`)
-where each color index must be mapped to a landscape elevation level, relative to the sea level. 
-
-More information about how to build the images and CSV-content can be found in the wiki.
+The contents of the directory and the configuration are explained in detail on the wiki pages. 
+There you will also find further practical information about map creation and manipulation.
 
 ## Compilation
 
@@ -100,7 +75,4 @@ or use `mvn compile` to skip generating JAR.
 
 [Querz/NBT](https://github.com/Querz/NBT)
 
-
-
-
-[Wiki]: https://github.com/Skrrytch/map2mc/wiki/Convert-maps-to-Minecraft-worlds
+[Wiki]: https://github.com/Skrrytch/map2mc/wiki/

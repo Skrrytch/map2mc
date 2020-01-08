@@ -49,7 +49,7 @@ ColorIndex,Block,Depth,Description
 47,grass_block,1,Waldrand und Schrift
 48,grass_block,1,Waldrand (punktuell)
 49,grass_block+birch_sapling:5,1,Waldrand
-50,grass_path+lantern:2,1,Wege
+50,grass_path+lantern:100,1,Wege
 51,grass_block+grass:10,1,Wiesen
 52,grass_block,1,Waldrand (punktuell)
 53,grass_block+grass:15,1,Wiesen

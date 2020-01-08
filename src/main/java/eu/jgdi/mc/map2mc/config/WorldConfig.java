@@ -137,6 +137,10 @@ public class WorldConfig {
         if (configPath != null && path.startsWith("./")) {
             return Path.of(configPath, path.substring(2)).toFile();
         } else {
+            String filePath = path;
+            if (filePath.startsWith("~")) {
+                filePath = System.getProperty("user.home") + filePath.substring(1);
+            }
             return new File(path);
         }
     }

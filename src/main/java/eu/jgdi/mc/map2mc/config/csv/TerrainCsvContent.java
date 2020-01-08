@@ -18,8 +18,6 @@ public class TerrainCsvContent extends AbstractCsvContent {
 
     private final static String HEADER_LEVEL = "Level";
 
-    private final static String HEADER_RELATIVE_TO = "RelativeTo";
-
     private final static String HEADER_DESCR = "Description";
 
     private CSVFormat csvFormat;
@@ -36,29 +34,11 @@ public class TerrainCsvContent extends AbstractCsvContent {
 
         private int level;
 
-        private final Relation relativeTo;
-
         private String description;
 
-        private enum Relation {
-            SEA,
-            NEIGHBORS;
-
-            public static Relation of(String relativeToValue) {
-                switch (relativeToValue.toUpperCase()) {
-                    case "NEIGHBORS":
-                        return NEIGHBORS;
-                    case "SEA":
-                    default:
-                        return SEA;
-                }
-            }
-        }
-
-        public Record(int colorIndex, int level, Relation relation, String description) {
+        public Record(int colorIndex, int level, String description) {
             this.colorIndex = colorIndex;
             this.level = level;
-            this.relativeTo = relation;
             this.description = description;
         }
 
@@ -68,10 +48,6 @@ public class TerrainCsvContent extends AbstractCsvContent {
 
         public int getLevel() {
             return level;
-        }
-
-        public Relation getRelativeTo() {
-            return relativeTo;
         }
 
         public String getDescription() {
@@ -101,12 +77,10 @@ public class TerrainCsvContent extends AbstractCsvContent {
             for (CSVRecord csvRecord : parser.getRecords()) {
                 String colorIndexValue = csvRecord.get(HEADER_INDEX);
                 String levelValue = csvRecord.get(HEADER_LEVEL);
-                String relativeToValue = csvRecord.get(HEADER_RELATIVE_TO);
                 String description = csvRecord.get(HEADER_DESCR);
                 Record record = new Record(
                         Integer.parseInt(colorIndexValue.trim()),
                         Integer.parseInt(levelValue.trim()),
-                        Record.Relation.of(relativeToValue),
                         description);
                 map.put(record.getColorIndex(), record);
             }
@@ -121,7 +95,7 @@ public class TerrainCsvContent extends AbstractCsvContent {
             printer.printComment(
                     "Terrain definition: Use the color indexes of the terrain image and define their level" +
                             "(relative to the sea level");
-            printer.printRecord(HEADER_INDEX, HEADER_LEVEL, HEADER_RELATIVE_TO, HEADER_DESCR);
+            printer.printRecord(HEADER_INDEX, HEADER_LEVEL, HEADER_DESCR);
         } catch (IOException ex) {
             throw new IllegalArgumentException("Failed to write CSV", ex);
         }
