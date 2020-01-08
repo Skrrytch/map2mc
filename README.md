@@ -32,7 +32,7 @@ __Limitations:__
 
 - Getting the best out of existing maps is not easy.
 - The height and width of the maps (in pixels) must be multiples of 512
-- A pixel is mapped 1: 1 to a Minecraft block
+- A pixel is mapped 1:1 to a Minecraft block
 - The zero point of the Minecraft world is always the top left corner of the map
 - All texts are also rendered in the world
 - You can put 'saplings' but no trees. These have to grow first! (but there is a trick)
@@ -47,9 +47,9 @@ a height map and a surface map with the resulting minecraft world.
 ![Surface Map][selfdrawn_surface]
 ![Minecraft][selfdrawn_mcworld]
 
-[selfdrawn_terrain]: doc/images/selfdrawn-terrain-small.bmp "surface bitmap"
-[selfdrawn_surface]: doc/images/selfdrawn-surface-small.bmp "terrain bitmap"
-[selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "terrain bitmap"
+[selfdrawn_terrain]: doc/images/selfdrawn-terrain-small.bmp "height map"
+[selfdrawn_surface]: doc/images/selfdrawn-surface-small.bmp "surface map"
+[selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "Minecraft"
 
 __Example "Map"__
 
@@ -60,9 +60,9 @@ a normal map and a mountain map with the resulting minecraft world.
 ![Mountains Map][realmap_mountains]
 ![Minecraft][realmap_mcworld]
 
-[realmap_terrain]: doc/images/realmap-terrain-small.bmp "surface bitmap"
-[realmap_mountains]: doc/images/realmap-mountains-small.bmp "terrain bitmap"
-[realmap_mcworld]: doc/images/realmap-mcworld-small.png "terrain bitmap"
+[realmap_terrain]: doc/images/realmap-terrain-small.bmp "normal mapo"
+[realmap_mountains]: doc/images/realmap-mountains-small.bmp "mountains map"
+[realmap_mcworld]: doc/images/realmap-mcworld-small.png "Minecraft"
 
 The area which you can see in the screenshot from Minecraft 
 is highlighted in the terrain map.
