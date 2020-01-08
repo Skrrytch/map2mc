@@ -10,18 +10,6 @@ I wanted to use another approach but maybe that project is what you were looking
 
 This tool is tested with Minecraft Java-Edition!
 
-The following images of a self drawn map demonstrate the usage of a terrain bitmap, a surface bitmap and the resulting minecraft world.
-
-![alt text][selfdrawn_terrain]
-![alt text][selfdrawn_surface]
-![alt text][selfdrawn_mcworld]
-
-You can find more details on the wiki page: https://github.com/Skrrytch/map2mc/wiki
-
-[selfdrawn_surface]: doc/images/selfdrawn-surface.bmp "terrain bitmap"
-[selfdrawn_terrain]: doc/images/selfdrawn-terrain.bmp "surface bitmap"
-[selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "terrain bitmap"
-
 __Features:__
 
 - Use a real height map to create the Minecraft landscape
@@ -40,7 +28,7 @@ __Features:__
 - Calculate the world with several threads in parallel
 - Save the Minecraft world directly to the 'saves' folder
 
-__Limitations: __
+__Limitations:__
 
 - Getting the best out of existing maps is not easy.
 - The height and width of the maps (in pixels) must be multiples of 512
@@ -48,6 +36,34 @@ __Limitations: __
 - The zero point of the Minecraft world is always the top left corner of the map
 - All texts are also rendered in the world
 - You can put 'saplings' but no trees. These have to grow first! (but there is a trick)
+
+
+__Example "SelfDrawn"__
+
+The following images of a self drawn map demonstrate the usage of 
+a height map and a surface map with the resulting minecraft world.
+
+![Height Map][selfdrawn_terrain]
+![Surface Map][selfdrawn_surface]
+![Minecraft][selfdrawn_mcworld]
+
+[selfdrawn_terrain]: doc/images/selfdrawn-terrain-small.bmp "surface bitmap"
+[selfdrawn_surface]: doc/images/selfdrawn-surface-small.bmp "terrain bitmap"
+[selfdrawn_mcworld]: doc/images/selfdrawn-mcworld-small.png "terrain bitmap"
+
+__Example "Map"__
+
+The following images of a real drawn map (Aventuria - the dark eye) demonstrate the usage of 
+a normal map and a mountain map with the resulting minecraft world.
+
+![Normal Map][realmap_terrain]
+![Mountains Map][realmap_mountains]
+![Minecraft][realmap_mcworld]
+
+[realmap_terrain]: doc/images/realmap-terrain-small.bmp "surface bitmap"
+[realmap_mountains]: doc/images/realmap-mountains-small.bmp "terrain bitmap"
+[realmap_mcworld]: doc/images/realmap-mcworld-small.png "terrain bitmap"
+
 
 ## Running the application
 
