@@ -64,6 +64,8 @@ a normal map and a mountain map with the resulting minecraft world.
 [realmap_mountains]: doc/images/realmap-mountains-small.bmp "terrain bitmap"
 [realmap_mcworld]: doc/images/realmap-mcworld-small.png "terrain bitmap"
 
+The area which you can see in the screenshot from Minecraft 
+is highlighted in the terrain map.
 
 ## Running the application
 
