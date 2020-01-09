@@ -71,6 +71,7 @@ public class AnvilRenderer extends Renderer {
                 logger.info("Anvil rendering threads not yet finished. Giving up!");
                 executor.shutdownNow();
             }
+
             if (config.validateBlockTypes()) {
                 List<String> unexpectedBlocks = threads.stream().flatMap(thread -> thread.getUnexpectedBlockTypes().stream())
                         .distinct()
@@ -79,10 +80,22 @@ public class AnvilRenderer extends Renderer {
                 if (unexpectedBlocks.size() == 0) {
                     logger.info("Validation info: All block types are well known.");
                 } else {
-                    logger.warn("Validation result: {0} unexpected block types, please review!", unexpectedBlocks.size());
+                    logger.warn("Validation info: {0} unexpected block types, please review!", unexpectedBlocks.size());
                     for (String unexpectedBlock : unexpectedBlocks) {
                         logger.warn("  {0}", unexpectedBlock);
                     }
+                }
+                List<String> messageList = threads.stream().flatMap(thread -> thread.getMessages().stream())
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList());
+                if (messageList.size() > 0) {
+                    logger.warn("Validation info: {0} different messages from the region renderers");
+                    for (String message : messageList) {
+                        logger.warn("  {0}", message);
+                    }
+                } else {
+                    logger.info("Validation info: No messages from region renderers");
                 }
             }
         } catch (InterruptedException e) {

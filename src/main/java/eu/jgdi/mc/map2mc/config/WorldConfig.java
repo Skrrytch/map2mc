@@ -59,7 +59,7 @@ public class WorldConfig {
         }
         this.seaLevel = (int) readLong(properties, "level.sea", 60);
         this.baseLevel = (int) readLong(properties, "level.base", 0);
-        this.threadCount = (int) readLong(properties, "options.threadCount", 4);
+        this.threadCount = (int) readLong(properties, "option.threadCount", 4);
         this.fileTerrainImage = readString(properties, "file.terrain.image", "./terrain.bmp");
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");

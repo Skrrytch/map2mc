@@ -3,8 +3,8 @@ package eu.jgdi.mc.map2mc.renderer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
 import net.querz.nbt.CompoundTag;
@@ -26,7 +26,9 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRegionRendererThread extends Thread {
 
-    private Set<String> unexpectedBlockTypes = new TreeSet<>();
+    private Set<String> unexpectedBlockTypes = new HashSet<>();
+
+    private Set<String> messages = new HashSet<>();
 
     private static final Logger logger = Logger.logger();
 
@@ -166,8 +168,11 @@ public class AnvilRegionRendererThread extends Thread {
 
                     if (surfaceRecord != null && surfaceRecord.hasAdditionalBlock()) {
                         float frequency = surfaceRecord.getAdditionalBlockFrequency();
+                        String additionalBlockId = surfaceRecord.getAdditionalBlockId();
+                        if (config.validateBlockTypes()) {
+                            validateAdditionalBlock(additionalBlockId, frequency);
+                        }
                         if (frequency >= 1f || Math.random() <= frequency) {
-                            String additionalBlockId = surfaceRecord.getAdditionalBlockId();
                             if (config.validateBlockTypes() && !Block.EXPECTED_BLOCK_TYPES.contains(additionalBlockId)) {
                                 unexpectedBlockTypes.add(additionalBlockId);
                             }
@@ -181,6 +186,12 @@ public class AnvilRegionRendererThread extends Thread {
 
         chunk.cleanupPalettesAndBlockStates();
         return chunk;
+    }
+
+    private void validateAdditionalBlock(String additionalBlockId, float frequency) {
+        if (additionalBlockId.contains("sapling") && frequency > 0.5) {
+            messages.add("Frequency of a sapling is higher than 50%. That seems to be alot!");
+        }
     }
 
     private int buildAdditionalBlock(int currentLevel, Chunk chunk, int x, int z, CompoundTag additionalCompound) {
@@ -221,5 +232,9 @@ public class AnvilRegionRendererThread extends Thread {
 
     public Set<String> getUnexpectedBlockTypes() {
         return unexpectedBlockTypes;
+    }
+
+    public Set<String> getMessages() {
+        return messages;
     }
 }
