@@ -57,9 +57,10 @@ public class WorldConfig {
         } catch (IOException ex) {
             logger.info("Config file does not exist. Creating one ...", configFilePath);
         }
-        this.seaLevel = (int) readLong(properties, "level.sea", 60);
-        this.baseLevel = (int) readLong(properties, "level.base", 0);
+        this.baseLevel = (int) readLong(properties, "level.base", 40);
+        this.seaLevel = (int) readLong(properties, "level.sea", 20);
         this.threadCount = (int) readLong(properties, "option.threadCount", 4);
+        this.validateBlockTypes = readBoolean(properties, "option.validate-blocks", true);
         this.fileTerrainImage = readString(properties, "file.terrain.image", "./terrain.bmp");
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");
@@ -67,7 +68,6 @@ public class WorldConfig {
         this.fileMountainsImage = readString(properties, "file.mountains.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
-        this.validateBlockTypes = readBoolean(properties, "option.validate-blocks", true);
 
         if (!configFileExists || initializeOnly) {
             FileOutputStream outStream = new FileOutputStream(configFilePath);
