@@ -66,8 +66,12 @@ public class Main {
         for (String arg : args) {
             if (arg.startsWith(ARG_DIRECTORY + "=")) {
                 String directory = arg.substring(ARG_DIRECTORY.length() + 1).trim();
-                logger.info("Using directory: {0}", directory);
-                return new File(directory);
+                String filePath = directory;
+                if (filePath.startsWith("~")) {
+                    filePath = System.getProperty("user.home") + filePath.substring(1);
+                }
+                logger.info("Using directory: {0}", filePath);
+                return new File(filePath);
             }
         }
         logger.error("Missing argument ''{0}''", ARG_DIRECTORY);
