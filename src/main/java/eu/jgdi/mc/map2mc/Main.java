@@ -32,8 +32,9 @@ public class Main {
         converter.parseWorld();
         String targetDirectory = converter.renderWorld();
 
+        Duration duration = Duration.of(System.currentTimeMillis() - startedAt, ChronoUnit.MILLIS);
         logger.info("Finished with ''{0}'', Minecraft world written to {1}", directory.getName(), targetDirectory);
-        logger.info("Duration: {0} sec", Duration.of(System.currentTimeMillis() - startedAt, ChronoUnit.MILLIS));
+        logger.info("Duration: {0}", humanReadableFormat(duration));
     }
 
     public static String humanReadableFormat(Duration duration) {
