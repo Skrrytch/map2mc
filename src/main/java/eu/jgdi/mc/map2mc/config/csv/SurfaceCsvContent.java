@@ -43,11 +43,11 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
         private float additionalBlockFrequency;
 
-        private byte depth;
+        private int depth;
 
         private String description;
 
-        public Record(int colorIndex, String blockIdDef, byte depth, String description) {
+        public Record(int colorIndex, String blockIdDef, int depth, String description) {
             this.colorIndex = colorIndex;
             List<String> list = Arrays.stream(blockIdDef.split("\\+")).collect(Collectors.toList());
             this.blockId = list.get(0);
@@ -93,7 +93,7 @@ public class SurfaceCsvContent extends AbstractCsvContent {
             return additionalBlockFrequency;
         }
 
-        public byte getDepth() {
+        public int getDepth() {
             return depth;
         }
 
@@ -124,12 +124,13 @@ public class SurfaceCsvContent extends AbstractCsvContent {
     }
 
     private CSVParser load(File file) {
+        int row = 1;
         try {
             CSVParser parser = csvFormat.parse(new FileReader(file));
             for (CSVRecord csvRecord : parser.getRecords()) {
-                byte colorIndexValue = readByte(csvRecord, HEADER_INDEX);
+                int colorIndexValue = readInt(csvRecord, HEADER_INDEX);
                 String blockId = csvRecord.get(HEADER_BLOCK);
-                byte depth = readByte(csvRecord, HEADER_DEPTH, (byte) 1);
+                int depth = readInt(csvRecord, HEADER_DEPTH, (byte) 1);
                 String description = csvRecord.get(HEADER_DESCR);
                 Record record = new Record(
                         colorIndexValue,
@@ -137,36 +138,36 @@ public class SurfaceCsvContent extends AbstractCsvContent {
                         depth,
                         description);
                 map.put(record.getColorIndex(), record);
+                row++;
             }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "'", e);
+        } catch (RuntimeException | IOException e) {
+            throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "' at row " + row, e);
         }
         return null;
     }
 
-    private byte readByte(CSVRecord csvRecord, String name) {
+    private int readInt(CSVRecord csvRecord, String name) {
         try {
             String value = csvRecord.get(name);
             if (value == null || value.trim().isEmpty()) {
                 logger.error("Failed to read {0}: Value required!", name);
                 System.exit(1);
             }
-            return Byte.parseByte(value.trim());
+            return Integer.parseInt(value.trim());
         } catch (RuntimeException ex) {
             String colorIndexValue = csvRecord.get(HEADER_INDEX);
-            logger.error("Failed to read {0} from record.", name, colorIndexValue);
-            System.exit(1);
-            return 0;
+            logger.error(ex, "Failed to read {0} from record.", name, colorIndexValue);
+            throw ex;
         }
     }
 
-    private byte readByte(CSVRecord csvRecord, String name, byte defaultValue) {
+    private int readInt(CSVRecord csvRecord, String name, byte defaultValue) {
         try {
             String value = csvRecord.get(name);
             if (value == null || value.trim().isEmpty()) {
                 return defaultValue;
             }
-            return Byte.parseByte(value.trim());
+            return Integer.parseInt(value.trim());
         } catch (RuntimeException ex) {
             String colorIndexValue = csvRecord.get(HEADER_INDEX);
             logger.error("Failed to read {0} from record with index {1}", name, colorIndexValue);

@@ -55,7 +55,7 @@ public class AnvilRenderer extends Renderer {
 
                 // renderRegion(region, properties, outputDir);
                 AnvilRegionRendererThread anvilRegionRendererThread =
-                        new AnvilRegionRendererThread(file.getName(), latch, region, worldRepo);
+                        new AnvilRegionRendererThread(fileCount, file.getName(), latch, region, worldRepo);
                 threads.add(anvilRegionRendererThread);
                 executor.execute(anvilRegionRendererThread);
             } catch (Exception e) {

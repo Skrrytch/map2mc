@@ -26,6 +26,8 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRegionRendererThread extends Thread {
 
+    private final long fileNumber;
+
     private Set<String> unexpectedBlockTypes = new HashSet<>();
 
     private Set<String> messages = new HashSet<>();
@@ -55,11 +57,13 @@ public class AnvilRegionRendererThread extends Thread {
     private SurfaceCsvContent surfaceCsvContent;
 
     public AnvilRegionRendererThread(
+            long fileNumber,
             String fileName,
             CountDownLatch latch,
             RegionInfoMap regionInfoMap,
             WorldRepository worldRepo) {
         this.latch = latch;
+        this.fileNumber = fileNumber;
         this.fileName = fileName;
         this.regionInfoMap = regionInfoMap;
         this.worldRepo = worldRepo;
@@ -101,7 +105,12 @@ public class AnvilRegionRendererThread extends Thread {
 
                 region.setChunk(x, z, chunk);
                 if (chunkCount % 256 == 0) {
-                    logger.info("  Region file ''{0}'': Chunk {1} of {2} done", fileName, chunkCount, chunkSize);
+                    logger.info(
+                            "  Region file {0} (''{1}''): Chunk {2} of {3} done",
+                            fileNumber,
+                            fileName,
+                            chunkCount,
+                            chunkSize);
                 }
             }
         }
@@ -138,7 +147,7 @@ public class AnvilRegionRendererThread extends Thread {
                 int levelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
                 String blockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "dirt";
 
-                byte surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
+                int surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
                 int top = seaLevel + levelOffset + mountainLevel;
                 CompoundTag block = worldRepo.getBlockCompoundId(blockId);
 
