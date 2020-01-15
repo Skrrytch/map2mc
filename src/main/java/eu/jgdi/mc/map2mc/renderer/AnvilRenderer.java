@@ -90,7 +90,7 @@ public class AnvilRenderer extends Renderer {
                         .sorted()
                         .collect(Collectors.toList());
                 if (messageList.size() > 0) {
-                    logger.warn("Validation info: {0} different messages from the region renderers");
+                    logger.warn("Validation info: {0} message(s) from the region renderers", messageList.size());
                     for (String message : messageList) {
                         logger.warn("  {0}", message);
                     }
