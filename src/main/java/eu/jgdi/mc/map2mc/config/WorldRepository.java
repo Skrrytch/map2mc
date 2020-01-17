@@ -5,7 +5,7 @@ import java.util.Map;
 
 import net.querz.nbt.CompoundTag;
 
-import eu.jgdi.mc.map2mc.config.WorldConfig;
+import eu.jgdi.mc.map2mc.model.raw.WorldRaster;
 
 public class WorldRepository {
 
@@ -24,9 +24,23 @@ public class WorldRepository {
     public CompoundTag getBlockCompoundId(String id) {
         if (!compoundTags.containsKey(id)) {
             CompoundTag compoundTag = new CompoundTag();
-            compoundTag.putString("Name", "minecraft:"+id);
+            compoundTag.putString("Name", "minecraft:" + id);
             compoundTags.put(id, compoundTag);
         }
         return compoundTags.get(id);
+    }
+
+    private Map<Integer, WorldRaster.Info> rasterInfoRepo = new HashMap<>();
+
+    public WorldRaster.Info buildRasterInfo(byte terrainColorIndex, byte surfaceColorIndex, byte mountainColorIndex) {
+        return new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
+//        int index = terrainColorIndex * 256 * 256 + surfaceColorIndex * 256 + mountainColorIndex;
+//        WorldRaster.Info info = rasterInfoRepo.get(index);
+//        if (info != null) {
+//            return info;
+//        }
+//        info = new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
+//        rasterInfoRepo.put(index, info);
+//        return info;
     }
 }

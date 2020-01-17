@@ -1,97 +1,97 @@
-ColorIndex,Block,Depth,Description
-0,granite,3,Gebirge Randgebiet
-1,dirt,3,Schrift im Wasser
-2,dirt,3,Schrift im Wasser
-3,sand,2,Wasser in Seen (flach)
-4,dirt,2,Wasser in Seen und Flüssen (tiefer)
-5,sand,2,Wasser in Seen und Flüssen (flach)
-6,sand,2,Wasser in Seen und Flüssen (flach)
-7,stone,1,o
-8,dirt,2,"Wasser in Seen und Flüssen (tief), teilw. Schrift"
-9,granite,1,Schrift in Wasser und an Flüssen
-10,dirt,1,Schrift im Wasser
-11,sand,1,Wasser in Seen und Flüssen (flach)
-12,granite,1,Schrift im Wasser
-13,sand,1,Wasser an der Küste (flach)
-14,dirt,1,Wasser im Meer (tief)
-15,grass_block,1,Wasser im Meer (Rand zur Tiefe)
-16,stone,1,Wege und Gewässerränder, Salzwüste in der Khom,,,
-17,sand,2,Wasser an Küste und vor allem Schrift im Wasser
-18,sand,1,Wasser an der Küste (flach)
-19,sand,2,"Viel am Randgebiet von Gewässern/Küste, teilweise Wege"
-20,sand,1,Am Rand von Wasser
-21,grass_block,1,Wandrandstreifen
-22,sand,2,Wasser in Flüssen (flach)
-23,grass_block,1,Wandrandstreifen
-24,grass_block,1,Wandrandstreifen (punktuell)
-25,sand,2,Wasser direkt am Rand von Wasser (sehr flach)
-26,grass_block+spruce_sapling:5,1,Waldmitte (klein)
-27,grass_block+spruce_sapling:5,1,Waldmitte (klein)
-28,grass_block,1,kommt im Ausschnitt nicht vor (vermutlich Wald)
-29,grass_block+birch_sapling:5,1,"Wald (punktuell), teilweise Schrift"
-30,grass_block+oak_sapling:5,1,Waldmitte
-31,grass_block,1,Waldrandstreifen
-32,grass_block,1,Waldrandstreifen
-33,grass_block+oak_sapling:5,1,Wald
-34,grass_block+birch_sapling:5,1,Waldrandstreifen
-35,grass_block+birch_sapling:5,1,Waldrandstreifen
-36,grass_block+oak_sapling:5,1,Waldmitte
-37,grass_block+spruce_sapling:5,1,Waldmitte
-38,grass_block,1,Waldrand und an Gewässern (punktuell)
-39,grass_block+acacia_sapling:5,1,Waldrand (punktuell)
-40,grass_block,1,Waldrand / Schrift (punktuell)
-41,grass_block+acacia_sapling:5,1,Waldrand (punktuell)
-42,grass_block,1,Gewässer- und Waldrand
-43,grass,1,Eher Wege als an Gewässern
-44,grass_block+tall_grass:50,1,Wiesen um Gewässer herum (punktuell)
-45,grass_block+poppy:10,1,Wiesen um Gewässer und Waldrand
-46,grass_block+rose_bush:10,1,Wiesen um Gewässer herum (punktuell)
-47,grass_block,1,Waldrand und Schrift
-48,grass_block,1,Waldrand (punktuell)
-49,grass_block+birch_sapling:5,1,Waldrand
-50,grass_path+lantern:100,1,Wege
-51,grass_block+grass:10,1,Wiesen
-52,grass_block,1,Waldrand (punktuell)
-53,grass_block+grass:15,1,Wiesen
-54,grass_block+cornflower:15,1,Wiesenrand
-55,grass_block,1,"Wiesen, teilweise nur punktuell"
-56,grass_block,1,"Schrift im Gebirge, ansonsten nur punktuell bei Wegen"
-57,grass_block+orange_tulip:15,1,Wiesen (punktuell)
-58,grass_block+grass:15,1,Wiesen (kleine Flächen)
-59,grass_block,1,Wiesen (punktuell)
-60,grass_block+tall_grass:25,1,Wiesen (kleine Flächen)
-61,grass_block+tall_grass:10,1,Wiesen (Flächen)granite
-62,grass_block+grass:35,1,Wiesen (Flächen) erhöht +2
-63,grass_block+grass:30,1,Wiesen (Flächen) erhöht + 1
-64,grass_block+oxeye_daisy:15,1,Wiese-zu-Flusstal-Übergang
-65,grass_block+grass:50,3,Wiesen (Flächen) erhöht +3
-66,grass_block+grass:75,1,Wiesen (Flächen) erhöht +1
-67,stone,1,"Verschiedenes, viel im Gebirge, teilweise an Wegen und Schrift"
-68,grass_block,1,Hochgelegene Waldflecken (punktuell)
-69,grass_block+grass:15,1,Wiesen (Flächen) erhöht +3
-70,grass_block+grass:25,1,Wiesen (Flächen) erhöht +3
-71,dirt,1,Schrift und am Rande von Gebirgen
-72,stone,1,Verschiedenes wie Schrift und Gebirge (punktuell)
-73,stone,1,Gebirgsvorland
-74,stone,1,Gebirgspitzen (punktuell)
-75,stone,1,Schrift und Gebirge
-76,stone,1,Schrift und am Rande von Gebirgen
-77,stone,1,Schrift und am Rande von Gebirgen
-78,sand,3,Wüste und Gebirgsvorland (punktuell)
-79,stone,2,Am Rande von Gebirgen
-80,stone,2,Gebirgsvorland
-81,stone,2,Schrift und Gebirgsländer
-82,sand,6,"Wüste KOM, Rund um GOR, Gebirge, teilweise Küstennahe Hügel"
-83,sand,2,Am Rande der Wüste und des GOR-Vorlandes
-84,dirt,1,Am Rande der Wüste und des GOR-Vorlandes
-85,stone,3,Gebirgsspitzen und GOR-Anstieg
-86,granite,4,Am Fuß von Gebirge und GOR-Vorland
-87,dirt,3,Gebirgstäler und GOR-Vorland
-88,stone,2,Gebirgespitzen (untere)
-89,granite,3,Gebirgstäler und Steilküste
-90,stone,2,Gebirgsspitzen (untere)
-91,stone,1,Gebirgsspitzen (obere) und teilw. Städte
-92,stone,3,Gebirgstäler und GOR-Anstieg
-93,stone,3,Gebirgs- und GOR-Anstieg
-94,stone,3,Gebirgsanstieg
-95,red_sand,6,"Wüste GOR, vereinzelt in Stadt"
+ColorIndex,Block,Depth,AdditionalBlocks,Description,
+0,granite,3,,Gebirge Randgebiet,
+1,dirt,3,,Schrift im Wasser,
+2,dirt,3,,Schrift im Wasser,
+3,sand,2,,Wasser in Seen (flach),
+4,dirt,2,,Wasser in Seen und Flüssen (tiefer),
+5,sand,2,,Wasser in Seen und Flüssen (flach),
+6,sand,2,,Wasser in Seen und Flüssen (flach),
+7,stone,1,,o,
+8,dirt,2,,"Wasser in Seen und Flüssen (tief), teilw. Schrift",
+9,granite,1,,Schrift in Wasser und an Flüssen,
+10,dirt,1,,Schrift im Wasser,
+11,sand,1,,Wasser in Seen und Flüssen (flach),
+12,granite,1,,Schrift im Wasser,
+13,sand,1,,Wasser an der Küste (flach),
+14,dirt,1,,Wasser im Meer (tief),
+15,grass_block,1,,Wasser im Meer (Rand zur Tiefe),
+16,stone,1,,Wege und Gewässerränder, Salzwüste in der Khom
+17,sand,2,,Wasser an Küste und vor allem Schrift im Wasser,
+18,sand,1,,Wasser an der Küste (flach),
+19,sand,2,,"Viel am Randgebiet von Gewässern/Küste, teilweise Wege",
+20,sand,1,,Am Rand von Wasser,
+21,grass_block,1,,Wandrandstreifen,
+22,sand,2,,Wasser in Flüssen (flach),
+23,grass_block,1,,Wandrandstreifen,
+24,grass_block,1,,Wandrandstreifen (punktuell),
+25,sand,2,,Wasser direkt am Rand von Wasser (sehr flach),
+26,grass_block,1,spruce_sapling:5,Waldmitte (klein),
+27,grass_block,1,spruce_sapling:5,Waldmitte (klein),
+28,grass_block,1,,kommt im Ausschnitt nicht vor (vermutlich Wald),
+29,grass_block,1,birch_sapling:5,"Wald (punktuell), teilweise Schrift",
+30,grass_block,1,oak_sapling:5,Waldmitte,
+31,grass_block,1,,Waldrandstreifen,
+32,grass_block,1,,Waldrandstreifen,
+33,grass_block,1,oak_sapling:5,Wald,
+34,grass_block,1,birch_sapling:5,Waldrandstreifen,
+35,grass_block,1,birch_sapling:5,Waldrandstreifen,
+36,grass_block,1,oak_sapling:5,Waldmitte,
+37,grass_block,1,spruce_sapling:5,Waldmitte,
+38,grass_block,1,,Waldrand und an Gewässern (punktuell),
+39,grass_block,1,acacia_sapling:5,Waldrand (punktuell),
+40,grass_block,1,,Waldrand / Schrift (punktuell),
+41,grass_block,1,acacia_sapling:5,Waldrand (punktuell),
+42,grass_block,1,,Gewässer- und Waldrand,
+43,grass_block,1,,Eher Wege als an Gewässern,
+44,grass_block,1,tall_grass:50,Wiesen um Gewässer herum (punktuell),
+45,grass_block,1,poppy:10,Wiesen um Gewässer und Waldrand,
+46,grass_block,1,rose_bush:10,Wiesen um Gewässer herum (punktuell),
+47,grass_block,1,,Waldrand und Schrift,
+48,grass_block,1,,Waldrand (punktuell),
+49,grass_block,1,birch_sapling:5,Waldrand,
+50,grass_path,1,lantern:3,Wege,
+51,grass_block,1,grass:10,Wiesen,
+52,grass_block,1,,Waldrand (punktuell),
+53,grass_block,1,grass:15,Wiesen,
+54,grass_block,1,cornflower:15,Wiesenrand,
+55,grass_block,1,,"Wiesen, teilweise nur punktuell",
+56,grass_block,1,,"Schrift im Gebirge, ansonsten nur punktuell bei Wegen",
+57,grass_block,1,orange_tulip:15,Wiesen (punktuell),
+58,grass_block,1,grass:15,Wiesen (kleine Flächen),
+59,grass_block,1,,Wiesen (punktuell),
+60,grass_block,1,tall_grass:25,Wiesen (kleine Flächen),
+61,grass_block,1,tall_grass:10,Wiesen (Flächen)granite,
+62,grass_block,1,grass:35,Wiesen (Flächen) erhöht +2,
+63,grass_block,1,grass:30,Wiesen (Flächen) erhöht + 1,
+64,grass_block,1,oxeye_daisy:15,Wiese-zu-Flusstal-Übergang,
+65,grass_block,3,grass:50,Wiesen (Flächen) erhöht +3,
+66,grass_block,1,grass:75,Wiesen (Flächen) erhöht +1,
+67,stone,1,,"Verschiedenes, viel im Gebirge, teilweise an Wegen und Schrift",
+68,grass_block,1,,Hochgelegene Waldflecken (punktuell),
+69,grass_block,1,grass:15,Wiesen (Flächen) erhöht +3,
+70,grass_block,1,grass:25,Wiesen (Flächen) erhöht +3,
+71,dirt,1,,Schrift und am Rande von Gebirgen,
+72,stone,1,,Verschiedenes wie Schrift und Gebirge (punktuell),
+73,stone,1,,Gebirgsvorland,
+74,stone,1,,Gebirgspitzen (punktuell),
+75,stone,1,,Schrift und Gebirge,
+76,stone,1,,Schrift und am Rande von Gebirgen,
+77,stone,1,,Schrift und am Rande von Gebirgen,
+78,sand,3,,Wüste und Gebirgsvorland (punktuell),
+79,stone,2,,Am Rande von Gebirgen,
+80,stone,2,,Gebirgsvorland,
+81,stone,2,,Schrift und Gebirgsländer,
+82,sand,6,,"Wüste KOM, Rund um GOR, Gebirge, teilweise Küstennahe Hügel",
+83,sand,2,,Am Rande der Wüste und des GOR-Vorlandes,
+84,dirt,1,,Am Rande der Wüste und des GOR-Vorlandes,
+85,stone,3,,Gebirgsspitzen und GOR-Anstieg,
+86,granite,4,,Am Fuß von Gebirge und GOR-Vorland,
+87,dirt,3,,Gebirgstäler und GOR-Vorland,
+88,stone,2,,Gebirgespitzen (untere),
+89,granite,3,,Gebirgstäler und Steilküste,
+90,stone,2,,Gebirgsspitzen (untere),
+91,stone,1,,Gebirgsspitzen (obere) und teilw. Städte,
+92,stone,3,,Gebirgstäler und GOR-Anstieg,
+93,stone,3,,Gebirgs- und GOR-Anstieg,
+94,stone,3,,Gebirgsanstieg,
+95,red_sand,6,,"Wüste GOR, vereinzelt in Stadt",

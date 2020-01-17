@@ -1,8 +1,8 @@
-ColorIndex,Block,Depth,Description
-9,sand,3,Sand in water and at the coast
-3,grass_block+oak_sapling:5,1,Forest of oaks (5%)
-11,stone,1,Mountains
-7,grass_block+orange_tulip:100,1,Lawn with orange tulips (20%)
-5,grass_block+birch_sapling:5,1,Forst of birches (5%)
-4,grass_block+spruce_sapling:5,1,Forst of spruces (5%)
-10,stone+lantern:100,2,Stone block with a lantern on it
+ColorIndex,Block,Depth,AdditionalBlocks,Description
+9,sand,3,,Sand in water and at the coast
+3,grass_block,1,oak_sapling:5,Forest of oaks (5%)
+11,stone,1,,Mountains
+7,grass_block,1,orange_tulip:100,Lawn with orange tulips (20%)
+5,grass_block,1,birch_sapling:5,Forst of birches (5%)
+4,grass_block,1,spruce_sapling:5,Forst of spruces (5%)
+10,stone,2,lantern:100,Stone block with a lantern on it

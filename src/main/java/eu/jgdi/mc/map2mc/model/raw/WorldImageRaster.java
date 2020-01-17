@@ -8,7 +8,6 @@ import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.utils.Logger;
-import eu.jgdi.mc.map2mc.utils.Pixels;
 
 public class WorldImageRaster extends WorldRaster {
 
@@ -44,7 +43,7 @@ public class WorldImageRaster extends WorldRaster {
         if (pixel.length > 1) {
             throw new IllegalArgumentException("Surface image is not index based.");
         }
-        if (mountainsRaster!=null) {
+        if (mountainsRaster != null) {
             pixel = mountainsRaster.getPixel(0, 0, (float[]) null);
             if (pixel.length > 1) {
                 throw new IllegalArgumentException("Mountain image is not index based.");
@@ -64,18 +63,18 @@ public class WorldImageRaster extends WorldRaster {
     @Override
     public Info getPixelInfo(int pixelX, int pixelY) {
         float[] pixel = terrainRaster.getPixel(pixelX, pixelY, (float[]) null);
-        byte terrainColorIndex = Pixels.getColorIndex(pixel);
+        byte terrainColorIndex = (byte) pixel[0];
         byte surfaceColorIndex;
         if (surfaceRaster != terrainRaster) {
             pixel = surfaceRaster.getPixel(pixelX, pixelY, (float[]) null);
-            surfaceColorIndex = Pixels.getColorIndex(pixel);
+            surfaceColorIndex = (byte) pixel[0];
         } else {
             surfaceColorIndex = terrainColorIndex;
         }
         byte mountainColorIndex = 0;
         if (mountainsRaster != null) {
             pixel = mountainsRaster.getPixel(pixelX, pixelY, (float[]) null);
-            mountainColorIndex = Pixels.getColorIndex(pixel);
+            mountainColorIndex = (byte) pixel[0];
         }
         return new Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
     }

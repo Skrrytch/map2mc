@@ -54,7 +54,7 @@ public class ChunkInfoMap {
         return surfaceIndexField[z][x];
     }
 
-    public byte getMountainIndex(int x, int z) {
+    public byte getMountainLevel(int x, int z) {
         return mountainIndexField[z][x];
     }
 

@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -45,8 +44,6 @@ public class WorldConfig {
 
     private final int threadCount;
 
-    private boolean validateBlockTypes;
-
     public WorldConfig(File configFilePath, boolean initializeOnly) throws IOException {
         boolean configFileExists = false;
         SortedProperties properties = new SortedProperties();
@@ -60,7 +57,6 @@ public class WorldConfig {
         this.baseLevel = (int) readLong(properties, "level.base", 40);
         this.seaLevel = (int) readLong(properties, "level.sea", 20);
         this.threadCount = (int) readLong(properties, "option.threadCount", 4);
-        this.validateBlockTypes = readBoolean(properties, "option.validate-blocks", true);
         this.fileTerrainImage = readString(properties, "file.terrain.image", "./terrain.bmp");
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");
@@ -197,10 +193,6 @@ public class WorldConfig {
         return baseLevel;
     }
 
-    public List<Integer> getEmptyLevels() {
-        return List.of(3, 4, 5, 7);
-    }
-
     private String readString(Properties properties, String name, String defaultValue) {
         String value = properties.getProperty(name, null);
         if (value == null) {
@@ -245,9 +237,5 @@ public class WorldConfig {
 
     public int getThreadCount() {
         return threadCount;
-    }
-
-    public boolean validateBlockTypes() {
-        return validateBlockTypes;
     }
 }

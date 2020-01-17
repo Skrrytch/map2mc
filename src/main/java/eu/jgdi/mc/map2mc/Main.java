@@ -13,7 +13,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        long startedAt = System.currentTimeMillis();
         File directory = processArguments(args);
         if (directory == null) {
             System.exit(0);
@@ -29,12 +28,17 @@ public class Main {
             System.exit(0);
         }
 
+        long startedAt = System.currentTimeMillis();
         converter.parseWorld();
-        String targetDirectory = converter.renderWorld();
-
         Duration duration = Duration.of(System.currentTimeMillis() - startedAt, ChronoUnit.MILLIS);
-        logger.info("Finished with ''{0}'', Minecraft world written to {1}", directory.getName(), targetDirectory);
-        logger.info("Duration: {0}", humanReadableFormat(duration));
+        logger.info("Finished parsing in {0}", humanReadableFormat(duration));
+
+        startedAt = System.currentTimeMillis();
+        String targetDirectory = converter.renderWorld();
+        duration = Duration.of(System.currentTimeMillis() - startedAt, ChronoUnit.MILLIS);
+
+        logger.info("Finished rendering in {0}", humanReadableFormat(duration));
+        logger.info("Project: ''{0}''. Minecraft world files written to ''{1}''", directory.getName(), targetDirectory);
     }
 
     public static String humanReadableFormat(Duration duration) {
@@ -91,7 +95,7 @@ public class Main {
 
     private static void displayKnownBlocks() {
         System.out.println("List of known blocks (there are many other that are also supported)");
-        Block.EXPECTED_BLOCK_TYPES.stream()
+        Block.EXPECTED_BLOCK_TYPES.keySet().stream()
                 .sorted().forEach(blockId -> System.out.println("  " + blockId));
     }
 }
