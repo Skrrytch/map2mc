@@ -84,6 +84,9 @@ public class Parser {
             fileToBeRead = config.getMountainsImageFile();
             BufferedImage mountainsImage = fileToBeRead != null ? ImageIO.read(fileToBeRead) : null;
 
+            fileToBeRead = config.getBiomesImageFile();
+            BufferedImage biomesImage = fileToBeRead != null ? ImageIO.read(fileToBeRead) : null;
+
             int xmin = 0;
             int ymin = 0;
             int xmax = 16;
@@ -94,7 +97,8 @@ public class Parser {
                             worldRepo,
                             terrainImage,
                             surfaceImage,
-                            mountainsImage),
+                            mountainsImage,
+                            biomesImage),
                     new GeoArea(
                             GeodeticDatum.EUREF89,
                             CoordinateSystem.UTM32N,

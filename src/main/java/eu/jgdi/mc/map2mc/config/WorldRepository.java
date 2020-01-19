@@ -32,15 +32,19 @@ public class WorldRepository {
 
     private Map<Integer, WorldRaster.Info> rasterInfoRepo = new HashMap<>();
 
-    public WorldRaster.Info buildRasterInfo(byte terrainColorIndex, byte surfaceColorIndex, byte mountainColorIndex) {
-        return new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
-//        int index = terrainColorIndex * 256 * 256 + surfaceColorIndex * 256 + mountainColorIndex;
-//        WorldRaster.Info info = rasterInfoRepo.get(index);
-//        if (info != null) {
-//            return info;
-//        }
-//        info = new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
-//        rasterInfoRepo.put(index, info);
-//        return info;
+    public WorldRaster.Info buildRasterInfo(
+            byte terrainColorIndex,
+            byte surfaceColorIndex,
+            byte mountainColorIndex,
+            byte biomeColorIndex) {
+        return new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex, biomeColorIndex);
+        //        int index = terrainColorIndex * 256 * 256 + surfaceColorIndex * 256 + mountainColorIndex;
+        //        WorldRaster.Info info = rasterInfoRepo.get(index);
+        //        if (info != null) {
+        //            return info;
+        //        }
+        //        info = new WorldRaster.Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
+        //        rasterInfoRepo.put(index, info);
+        //        return info;
     }
 }

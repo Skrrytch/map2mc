@@ -20,6 +20,8 @@ public class ChunkBuilder {
 
     private byte[][] mountainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
+    private byte[][] biomeIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+
     // maps each location to how many times there has been value insertions
     private Map<BlockLocation, Integer> insertions = new HashMap<>();
 
@@ -51,6 +53,7 @@ public class ChunkBuilder {
         terrainIndexField[z][x] = info.getTerrainIndex();
         surfaceIndexField[z][x] = info.getSurfaceIndex();
         mountainIndexField[z][x] = info.getMountainIndex();
+        biomeIndexField[z][x] = info.getBiomeIndex();
 
         Integer ins = insertions.computeIfAbsent(blockLocation, key -> 0);
         insertions.put(blockLocation, ins + 1);
@@ -74,7 +77,12 @@ public class ChunkBuilder {
         }
 
         if (chunkInfoMap == null) {
-            chunkInfoMap = new ChunkInfoMap(chunkLocation, terrainIndexField, surfaceIndexField, mountainIndexField);
+            chunkInfoMap = new ChunkInfoMap(
+                    chunkLocation,
+                    terrainIndexField,
+                    surfaceIndexField,
+                    mountainIndexField,
+                    biomeIndexField);
         }
 
         return chunkInfoMap;

@@ -10,7 +10,8 @@ public enum Block {
     STONE("stone"),
     UNKNOWN("gold_block"),
     WATER("water"),
-    BEDROCK("bedrock");
+    BEDROCK("bedrock"),
+    OAK_LOG("oak_log");
 
     private String blockId;
 

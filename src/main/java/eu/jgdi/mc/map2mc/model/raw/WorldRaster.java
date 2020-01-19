@@ -10,10 +10,13 @@ public abstract class WorldRaster {
 
         private byte mountainIndex;
 
-        public Info(byte terrainIndex, byte surfaceIndex, byte mountainIndex) {
+        private byte biomeIndex;
+
+        public Info(byte terrainIndex, byte surfaceIndex, byte mountainIndex, byte biomeIndex) {
             this.terrainIndex = terrainIndex;
             this.surfaceIndex = surfaceIndex;
             this.mountainIndex = mountainIndex;
+            this.biomeIndex = biomeIndex;
         }
 
         public byte getTerrainIndex() {
@@ -26,6 +29,10 @@ public abstract class WorldRaster {
 
         public byte getMountainIndex() {
             return mountainIndex;
+        }
+
+        public byte getBiomeIndex() {
+            return biomeIndex;
         }
     }
 

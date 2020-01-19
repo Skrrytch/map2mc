@@ -5,8 +5,6 @@ import java.awt.image.Raster;
 
 import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
-import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
-import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class WorldImageRaster extends WorldRaster {
@@ -19,22 +17,24 @@ public class WorldImageRaster extends WorldRaster {
 
     private final Raster mountainsRaster;
 
+    private final Raster biomeRaster;
+
     private WorldRepository worldRepo;
 
     private WorldConfig config;
 
-    private TerrainCsvContent terrainCsvContent;
-
-    private SurfaceCsvContent surfaceCsvContent;
-
-    public WorldImageRaster(WorldRepository worldRepo, BufferedImage terrain, BufferedImage surface, BufferedImage mountains) {
+    public WorldImageRaster(
+            WorldRepository worldRepo,
+            BufferedImage terrain,
+            BufferedImage surface,
+            BufferedImage mountains,
+            BufferedImage biomes) {
         this.worldRepo = worldRepo;
         this.config = worldRepo.getConfig();
         this.terrainRaster = terrain.getRaster();
         this.surfaceRaster = surface.getRaster();
         this.mountainsRaster = mountains != null ? mountains.getRaster() : null;
-        this.terrainCsvContent = config.getTerrainCsvContent();
-        this.surfaceCsvContent = config.getSurfaceCsvContent();
+        this.biomeRaster = biomes != null ? biomes.getRaster() : null;
         float[] pixel = terrainRaster.getPixel(0, 0, (float[]) null);
         if (pixel.length > 1) {
             throw new IllegalArgumentException("Terrain image is not index based.");
@@ -76,6 +76,11 @@ public class WorldImageRaster extends WorldRaster {
             pixel = mountainsRaster.getPixel(pixelX, pixelY, (float[]) null);
             mountainColorIndex = (byte) pixel[0];
         }
-        return new Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex);
+        byte biomeColorIndex = (byte) 0;
+        if (biomeRaster != null) {
+            pixel = biomeRaster.getPixel(pixelX, pixelY, (float[]) null);
+            biomeColorIndex = (byte) pixel[0];
+        }
+        return new Info(terrainColorIndex, surfaceColorIndex, mountainColorIndex, biomeColorIndex);
     }
 }

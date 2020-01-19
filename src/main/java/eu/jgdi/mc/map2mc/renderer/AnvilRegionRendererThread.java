@@ -17,6 +17,7 @@ import net.querz.nbt.mca.MCAUtil;
 import eu.jgdi.mc.map2mc.config.Constants;
 import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
+import eu.jgdi.mc.map2mc.config.csv.BiomesCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.model.minecraft.Block;
@@ -42,6 +43,8 @@ public class AnvilRegionRendererThread extends Thread {
 
     private final CompoundTag unknownCompound;
 
+    private final CompoundTag logCompound;
+
     private final CompoundTag bedrockCompound;
 
     private String fileName;
@@ -55,6 +58,8 @@ public class AnvilRegionRendererThread extends Thread {
     private TerrainCsvContent terrainCsvContent;
 
     private SurfaceCsvContent surfaceCsvContent;
+
+    private BiomesCsvContent biomeCsvContent;
 
     public AnvilRegionRendererThread(
             long fileNumber,
@@ -70,10 +75,12 @@ public class AnvilRegionRendererThread extends Thread {
         this.config = worldRepo.getConfig();
         this.terrainCsvContent = config.getTerrainCsvContent();
         this.surfaceCsvContent = config.getSurfaceCsvContent();
+        this.biomeCsvContent = config.getBiomesCsvContent();
         this.waterCompound = worldRepo.getBlockCompoundId(Block.WATER.getBlockId());
         this.stoneCompound = worldRepo.getBlockCompoundId(Block.STONE.getBlockId());
         this.unknownCompound = worldRepo.getBlockCompoundId(Block.UNKNOWN.getBlockId());
         this.bedrockCompound = worldRepo.getBlockCompoundId(Block.BEDROCK.getBlockId());
+        this.logCompound = worldRepo.getBlockCompoundId(Block.OAK_LOG.getBlockId());
     }
 
     @Override
@@ -141,9 +148,11 @@ public class AnvilRegionRendererThread extends Thread {
                 byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
                 byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
                 byte mountainLevel = chunkInfoMap.getMountainLevel(x, z);
+                byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
 
                 TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
                 SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(surfaceIndex);
+                BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
 
                 int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
                 String surfaceBlockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "dirt";
@@ -167,6 +176,10 @@ public class AnvilRegionRendererThread extends Thread {
                         additionalBlock = worldRepo.getBlockCompoundId(additionalBlockId);
                         additionalBlockCount = count != null ? count : 1;
                     }
+                }
+
+                if (biomeRecord != null && biomeRecord.getBiomeId() > 0) {
+                    chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
                 }
                 int currentLevel = 0;
                 if (terrainLevelOffset < 0) { // under water

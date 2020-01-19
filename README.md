@@ -25,6 +25,9 @@ __Features:__
   - Define the depth of the block types on the surface, e.g. 3 sand (and then stone)
   - Add items like grass, oak_sapling, orange_tulip, lantern ...
   - Specify probabilities with which the items are added
+- Supports a biome image and CSV mapping to defines biomes
+  - Will set the corresponding biome on each position.
+  - Biomes will influence the way Minecraft renderes gras, tree and much more
 - Calculate the world with several threads in parallel
 - Save the Minecraft world directly to the 'saves' folder
 

@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
+import eu.jgdi.mc.map2mc.config.csv.BiomesCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.utils.Logger;
@@ -26,9 +27,13 @@ public class WorldConfig {
 
     private String fileMountainsImage;
 
+    private String fileBiomesImage;
+
     private String fileTerrainCsv;
 
     private String fileSurfaceCsv;
+
+    private String fileBiomesCsv;
 
     private String dirOutputTmp;
 
@@ -37,6 +42,8 @@ public class WorldConfig {
     private TerrainCsvContent terrainCsvContent;
 
     private SurfaceCsvContent surfaceCsvContent;
+
+    private BiomesCsvContent biomesCsvContent;
 
     private final int seaLevel;
 
@@ -61,7 +68,9 @@ public class WorldConfig {
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");
         this.fileSurfaceCsv = readString(properties, "file.surface.csv", "./surface.csv");
+        this.fileBiomesCsv = readString(properties, "file.biomes.csv", "./biomes.csv");
         this.fileMountainsImage = readString(properties, "file.mountains.image", null);
+        this.fileBiomesImage = readString(properties, "file.biomes.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
 
@@ -106,6 +115,15 @@ public class WorldConfig {
                 surfaceCsvContent = SurfaceCsvContent.loadExisting(file);
                 logger.info("Surface CSV loaded: {0}", file.getAbsolutePath());
             }
+            file = buildFile(fileBiomesCsv);
+            if (!file.exists()) {
+                logger.info("Surface CSV does not exist. Creating one ...");
+                biomesCsvContent = BiomesCsvContent.createNew(file);
+                logger.info("Surface CSV created: {0}", file.getAbsolutePath());
+            } else {
+                biomesCsvContent = BiomesCsvContent.loadExisting(file);
+                logger.info("Surface CSV loaded: {0}", file.getAbsolutePath());
+            }
             file = buildFile(fileTerrainImage);
             if (!file.exists()) {
                 if (initializeOnly) {
@@ -137,7 +155,7 @@ public class WorldConfig {
             if (filePath.startsWith("~")) {
                 filePath = System.getProperty("user.home") + filePath.substring(1);
             }
-            return new File(path);
+            return new File(filePath);
         }
     }
 
@@ -155,6 +173,14 @@ public class WorldConfig {
 
     public File getMountainsImageFile() {
         return fileMountainsImage != null ? buildFile(fileMountainsImage) : null;
+    }
+
+    public String getBiomesImagePath() {
+        return fileBiomesImage;
+    }
+
+    public File getBiomesImageFile() {
+        return fileBiomesImage != null ? buildFile(fileBiomesImage) : null;
     }
 
     public File getTerrainImageFile() {
@@ -183,6 +209,10 @@ public class WorldConfig {
 
     public SurfaceCsvContent getSurfaceCsvContent() {
         return surfaceCsvContent;
+    }
+
+    public BiomesCsvContent getBiomesCsvContent() {
+        return biomesCsvContent;
     }
 
     public int getSeaLevel() {
