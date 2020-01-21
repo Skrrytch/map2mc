@@ -13,9 +13,9 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class MapToMinecraftConverter {
 
-    private static Logger logger = Logger.logger();
+    private static final Logger logger = Logger.logger();
 
-    private WorldRepository worldRepo;
+    private final WorldRepository worldRepo;
 
     private MapToMinecraftConverter(WorldRepository worldRepo) {
         this.worldRepo = worldRepo;
@@ -32,10 +32,10 @@ public class MapToMinecraftConverter {
         logger.info("Parsing world ...", worldRepo.getConfig().getOutputTmpDirectory());
         logger.info("- Temporary output: ''{0}''...", worldRepo.getConfig().getOutputTmpDirectory());
         if (worldRepo.getConfig().getMountainsImagePath() != null) {
-            logger.info("- Using mountain image file");
+            logger.info("- Using mountain image file {0}", worldRepo.getConfig().getMountainsImagePath());
         }
         if (!worldRepo.getConfig().areTerrainAndSurfaceFileTheSame()) {
-            logger.info("- Using specific surface image file");
+            logger.info("- Using specific surface image file: {0}", worldRepo.getConfig().getSurfaceImagePath());
         }
         Parser parser = new Parser(worldRepo);
         parser.parseWorld();

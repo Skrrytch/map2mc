@@ -71,7 +71,7 @@ public class TerrainCsvContent extends AbstractCsvContent {
         return result;
     }
 
-    private CSVParser load(File file) {
+    private void load(File file) {
         try {
             CSVParser parser = csvFormat.parse(new FileReader(file));
             for (CSVRecord csvRecord : parser.getRecords()) {
@@ -87,7 +87,6 @@ public class TerrainCsvContent extends AbstractCsvContent {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "'", e);
         }
-        return null;
     }
 
     private void storeEmptyFile(File file) {

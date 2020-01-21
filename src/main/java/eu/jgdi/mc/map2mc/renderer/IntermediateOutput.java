@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 
-import eu.jgdi.mc.map2mc.parser.ChunkBuilder;
 import eu.jgdi.mc.map2mc.config.Constants;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.ChunkLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.MinecraftLocation;
@@ -18,6 +17,7 @@ import eu.jgdi.mc.map2mc.model.minecraft.coordinates.RegionLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 import eu.jgdi.mc.map2mc.model.raw.ChunkInfoMap;
 import eu.jgdi.mc.map2mc.model.raw.Tuple;
+import eu.jgdi.mc.map2mc.parser.ChunkBuilder;
 
 /**
  * Writes the height of each block at surface position (x, z)
@@ -44,7 +44,7 @@ public class IntermediateOutput {
 
     public static final Pattern tempFilePattern = Pattern.compile("(\\d+)-(\\d+)");
 
-    private File outputDir;
+    private final File outputDir;
 
     public IntermediateOutput(File outputDir) {
         this.outputDir = outputDir;

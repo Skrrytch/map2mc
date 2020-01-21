@@ -28,6 +28,8 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
     private final static String HEADER_INDEX = "ColorIndex";
 
+    private final static String HEADER_BIOMENAME = "BiomeName";
+
     private final static String HEADER_BLOCK = "Block";
 
     private final static String HEADER_ADDITIONAL_BLOCK = "AdditionalBlocks";
@@ -38,7 +40,7 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
     private CSVFormat csvFormat;
 
-    private Map<Integer, Record> map;
+    private Map<String, Record> map;
 
     public static class AdditionalItem {
 
@@ -64,7 +66,9 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
         private int colorIndex;
 
-        private String blockId;
+        private List<String> blockIds;
+
+        private String biomeName;
 
         private List<AdditionalItem> additionalBlocks;
 
@@ -72,9 +76,16 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
         private String description;
 
-        public Record(int colorIndex, String blockIdDef, String additionalBlockIdDef, int depth, String description) {
+        public Record(
+                int colorIndex,
+                String blockIdDef,
+                String biomeName,
+                String additionalBlockIdDef,
+                int depth,
+                String description) {
             this.colorIndex = colorIndex;
-            this.blockId = blockIdDef;
+            this.blockIds = Arrays.stream(blockIdDef.split("\\+")).collect(Collectors.toList());
+            this.biomeName = biomeName;
             this.additionalBlocks = additionalBlockIdDef.isEmpty() ? null : parseAdditionalBlock(additionalBlockIdDef);
             this.depth = depth;
             this.description = description;
@@ -107,8 +118,8 @@ public class SurfaceCsvContent extends AbstractCsvContent {
             return colorIndex;
         }
 
-        public String getBlockId() {
-            return blockId;
+        public List<String> getBlockIds() {
+            return blockIds;
         }
 
         public List<AdditionalItem> getAdditionalBlocks() {
@@ -123,6 +134,10 @@ public class SurfaceCsvContent extends AbstractCsvContent {
             return depth;
         }
 
+        public String getBiomeName() {
+            return biomeName;
+        }
+
         public String getDescription() {
             return description;
         }
@@ -133,8 +148,15 @@ public class SurfaceCsvContent extends AbstractCsvContent {
         this.map = new LinkedHashMap<>();
     }
 
-    public Record getByColorIndex(int surfaceColorIndex) {
-        return map.get(surfaceColorIndex);
+    public Record getByColorIndex(int surfaceColorIndex, String biomeName) {
+        Record record = null;
+        if (biomeName != null && !biomeName.isBlank()) {
+            record = map.get(surfaceColorIndex + "/" + biomeName);
+        }
+        if (record == null) {
+            record = map.get(String.valueOf(surfaceColorIndex));
+        }
+        return record;
     }
 
     public static SurfaceCsvContent createNew(File file) {
@@ -157,16 +179,19 @@ public class SurfaceCsvContent extends AbstractCsvContent {
             for (CSVRecord csvRecord : parser.getRecords()) {
                 int colorIndexValue = readInt(csvRecord, HEADER_INDEX);
                 String blockId = csvRecord.get(HEADER_BLOCK);
+                String biomeName = csvRecord.get(HEADER_BIOMENAME);
                 int depth = readInt(csvRecord, HEADER_DEPTH, (byte) 1);
                 String additionalBlock = csvRecord.get(HEADER_ADDITIONAL_BLOCK);
                 String description = csvRecord.get(HEADER_DESCR);
                 Record record = new Record(
                         colorIndexValue,
                         blockId.trim(),
+                        biomeName.trim(),
                         additionalBlock.trim(),
                         depth,
                         description);
-                map.put(record.getColorIndex(), record);
+                String key = biomeName.isEmpty() ? String.valueOf(colorIndexValue) : record.getColorIndex() + "/" + biomeName;
+                map.put(key, record);
 
                 validateBlocksTypes(unknownBlockTypes, record);
 
@@ -196,9 +221,11 @@ public class SurfaceCsvContent extends AbstractCsvContent {
     }
 
     private void validateBlocksTypes(Set<String> unknownBlockTypes, Record record) {
-        String blockId = record.getBlockId();
-        if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
-            unknownBlockTypes.add(blockId);
+        List<String> blockIds = record.getBlockIds();
+        for (String blockId : blockIds) {
+            if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
+                unknownBlockTypes.add(blockId);
+            }
         }
         if (record.hasAdditionalBlock()) {
             record.getAdditionalBlocks().stream()
@@ -239,7 +266,7 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
     private void store(File file) {
         try (CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.EXCEL)) {
-            printer.printRecord(HEADER_INDEX, HEADER_BLOCK, HEADER_DEPTH, HEADER_DESCR);
+            printer.printRecord(HEADER_INDEX, HEADER_BIOMENAME, HEADER_BLOCK, HEADER_DEPTH, HEADER_DESCR);
         } catch (IOException ex) {
             throw new IllegalArgumentException("Failed to write CSV", ex);
         }

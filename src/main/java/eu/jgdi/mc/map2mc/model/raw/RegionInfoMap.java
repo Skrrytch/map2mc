@@ -3,9 +3,7 @@ package eu.jgdi.mc.map2mc.model.raw;
 import java.util.Arrays;
 
 import eu.jgdi.mc.map2mc.config.Constants;
-import eu.jgdi.mc.map2mc.model.minecraft.coordinates.BlockLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.ChunkLocation;
-import eu.jgdi.mc.map2mc.model.minecraft.coordinates.MinecraftLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.RegionLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 
@@ -17,7 +15,7 @@ public class RegionInfoMap {
 
     ChunkInfoMap[][] data = new ChunkInfoMap[Constants.REGION_LEN_Z][Constants.REGION_LEN_X];
 
-    public RegionInfoMap() {
+    private RegionInfoMap() {
     }
 
     public RegionInfoMap(RegionLocation location, byte[] data) throws Exception {
@@ -41,20 +39,6 @@ public class RegionInfoMap {
                 insertChunk(chunk);
             }
         }
-    }
-
-    public int getHeight(int x, int z) {
-
-        Tuple<MinecraftLocation> locationTuple = new BlockLocation(x, z)
-                .tryReferencedTo(ReferenceFrame.CHUNK);
-
-        BlockLocation blockLocation = (BlockLocation) locationTuple.first();
-        ChunkLocation chunkLocation = (ChunkLocation) locationTuple.second();
-
-        return data[chunkLocation.getZ()][chunkLocation.getX()]
-                .getTerrainIndex(
-                        blockLocation.getX(ReferenceFrame.CHUNK),
-                        blockLocation.getZ(ReferenceFrame.CHUNK));
     }
 
     public ChunkInfoMap getChunk(ChunkLocation chunkLocation) {

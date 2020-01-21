@@ -1,7 +1,5 @@
 package eu.jgdi.mc.map2mc.model.minecraft.coordinates;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import eu.jgdi.mc.map2mc.config.Constants;
@@ -23,13 +21,9 @@ public class ChunkLocation extends MinecraftLocation {
     private static Map<FrameTransition, ReferenceFrameShifter> referenceShifters;
 
     static {
-        Map<FrameTransition, ReferenceFrameShifter> map = new HashMap<>();
-
-        map.put(
+        referenceShifters = Map.of(
                 new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.REGION),
                 ChunkLocation::worldToRegionReferenceShifter);
-
-        referenceShifters = Collections.unmodifiableMap(map);
     }
 
     @Override

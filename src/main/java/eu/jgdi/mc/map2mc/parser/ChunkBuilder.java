@@ -12,15 +12,15 @@ import eu.jgdi.mc.map2mc.model.raw.WorldRaster;
 
 public class ChunkBuilder {
 
-    private ChunkLocation chunkLocation;
+    private final ChunkLocation chunkLocation;
 
-    private byte[][] terrainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+    private final byte[][] terrainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
-    private byte[][] surfaceIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+    private final byte[][] surfaceIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
-    private byte[][] mountainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+    private final byte[][] mountainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
-    private byte[][] biomeIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+    private final byte[][] biomeIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
     // maps each location to how many times there has been value insertions
     private Map<BlockLocation, Integer> insertions = new HashMap<>();
@@ -50,6 +50,8 @@ public class ChunkBuilder {
         // add the value; we'll get the average of all additions later
         int z = blockLocation.getZ(ReferenceFrame.CHUNK);
         int x = blockLocation.getX(ReferenceFrame.CHUNK);
+        z = Math.abs(z);
+        x = Math.abs(x);
         terrainIndexField[z][x] = info.getTerrainIndex();
         surfaceIndexField[z][x] = info.getSurfaceIndex();
         mountainIndexField[z][x] = info.getMountainIndex();

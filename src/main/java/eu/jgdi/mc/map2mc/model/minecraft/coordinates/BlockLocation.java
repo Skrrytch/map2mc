@@ -1,12 +1,14 @@
 package eu.jgdi.mc.map2mc.model.minecraft.coordinates;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import eu.jgdi.mc.map2mc.config.Constants;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.FrameTransition;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrameShifter;
 import eu.jgdi.mc.map2mc.model.raw.Tuple;
-import eu.jgdi.mc.map2mc.config.Constants;
-
-import java.util.*;
 
 public class BlockLocation extends MinecraftLocation {
 
@@ -19,13 +21,11 @@ public class BlockLocation extends MinecraftLocation {
     }
 
     private static Map<FrameTransition, ReferenceFrameShifter> referenceShifters;
+
     static {
-        Map<FrameTransition, ReferenceFrameShifter> map = new HashMap<>();
-
-        map.put(new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.CHUNK),
+        referenceShifters = Map.of(
+                new FrameTransition(ReferenceFrame.WORLD, ReferenceFrame.CHUNK),
                 BlockLocation::worldToChunkReferenceShifter);
-
-        referenceShifters = Collections.unmodifiableMap(map);
     }
 
     @Override

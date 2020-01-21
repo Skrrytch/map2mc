@@ -20,9 +20,9 @@ import eu.jgdi.mc.map2mc.model.raw.RegionInfoMap;
 
 public class AnvilRenderer extends Renderer {
 
-    private WorldRepository worldRepo;
+    private final WorldRepository worldRepo;
 
-    private WorldConfig config;
+    private final WorldConfig config;
 
     public AnvilRenderer(WorldRepository worldRepo) {
         this.worldRepo = worldRepo;
@@ -49,9 +49,7 @@ public class AnvilRenderer extends Renderer {
             try {
                 fileCount++;
                 // logger.info("Rending file {0} of {1} (''{2}'') ...", fileCount, files.size(), file.getAbsolutePath());
-                RegionInfoMap region = new RegionInfoMap(
-                        regionLocationMap.get(file),
-                        Files.readAllBytes(file.toPath()));
+                RegionInfoMap region = new RegionInfoMap(regionLocationMap.get(file), Files.readAllBytes(file.toPath()));
 
                 // renderRegion(region, properties, outputDir);
                 AnvilRegionRendererThread anvilRegionRendererThread =

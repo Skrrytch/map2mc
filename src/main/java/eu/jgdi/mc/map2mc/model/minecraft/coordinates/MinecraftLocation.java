@@ -1,14 +1,14 @@
 package eu.jgdi.mc.map2mc.model.minecraft.coordinates;
 
-import eu.jgdi.mc.map2mc.model.raw.Tuple;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.FrameTransition;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrameException;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrameShifter;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
+import eu.jgdi.mc.map2mc.model.raw.Tuple;
 
 /**
  * Describes a location in Minecraft in relation to the whole world (default),
@@ -19,9 +19,11 @@ import java.util.function.Function;
  */
 public abstract class MinecraftLocation {
 
-    int x;
-    int z;
-    ReferenceFrame referenceFrame;
+    final int x;
+
+    final int z;
+
+    private final ReferenceFrame referenceFrame;
 
     /**
      * A map for looking up <b>reference frame shifters</b> given a <b>frame transition</b>.
@@ -43,8 +45,9 @@ public abstract class MinecraftLocation {
         this.z = z;
     }
 
-    private int getComponent(ReferenceFrame referenceFrame,
-                             Function<MinecraftLocation, Integer> getter) {
+    private int getComponent(
+            ReferenceFrame referenceFrame,
+            Function<MinecraftLocation, Integer> getter) {
 
         if (this.referenceFrame != referenceFrame) {
             return getter.apply(this.tryReferencedTo(referenceFrame).first());
@@ -66,14 +69,6 @@ public abstract class MinecraftLocation {
 
     public int getZ(ReferenceFrame referenceFrame) {
         return getComponent(referenceFrame, location -> location.z);
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setZ(int z) {
-        this.z = z;
     }
 
     public ReferenceFrame getReferenceFrame() {
@@ -109,7 +104,6 @@ public abstract class MinecraftLocation {
     public String toString() {
         return "(x: " + x + ", z: " + z + ")" + (isAbsolutePosition() ? "" : " in " + this.referenceFrame);
     }
-
 
     /**
      * Stolen from {@link java.awt.geom.Point2D#hashCode()}

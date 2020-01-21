@@ -7,7 +7,7 @@ public class ChunkInfoMap {
 
     public static final int DATA_SZ = RawRecord.SIZE * Constants.CHUNK_LEN_X * Constants.CHUNK_LEN_Z;
 
-    private byte[][] flagField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
+    private final byte[][] flagField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 
     private byte[][] terrainIndexField = new byte[Constants.CHUNK_LEN_Z][Constants.CHUNK_LEN_X];
 

@@ -22,9 +22,9 @@ public class BiomesCsvContent extends AbstractCsvContent {
 
     private final static String HEADER_DESCR = "Description";
 
-    private CSVFormat csvFormat;
+    private final CSVFormat csvFormat;
 
-    private Map<Integer, Record> map = new LinkedHashMap<>();
+    private final Map<Integer, Record> map = new LinkedHashMap<>();
 
     public Record getByColorIndex(int terrainColorIndex) {
         return map.get(terrainColorIndex);
@@ -32,13 +32,13 @@ public class BiomesCsvContent extends AbstractCsvContent {
 
     public static class Record {
 
-        private int colorIndex;
+        private final int colorIndex;
 
-        private int biomeId;
+        private final int biomeId;
 
-        private String biomeName;
+        private final String biomeName;
 
-        private String description;
+        private final String description;
 
         public Record(int colorIndex, int biomeId, String biomeName, String description) {
             this.colorIndex = colorIndex;
@@ -80,7 +80,7 @@ public class BiomesCsvContent extends AbstractCsvContent {
         return result;
     }
 
-    private CSVParser load(File file) {
+    private void load(File file) {
         try {
             CSVParser parser = csvFormat.parse(new FileReader(file));
             for (CSVRecord csvRecord : parser.getRecords()) {
@@ -98,7 +98,6 @@ public class BiomesCsvContent extends AbstractCsvContent {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "'", e);
         }
-        return null;
     }
 
     private void storeEmptyFile(File file) {

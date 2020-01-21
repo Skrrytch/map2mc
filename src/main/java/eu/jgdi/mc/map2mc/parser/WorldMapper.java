@@ -1,5 +1,6 @@
 package eu.jgdi.mc.map2mc.parser;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,10 +11,8 @@ import eu.jgdi.mc.map2mc.model.minecraft.coordinates.ChunkLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.MinecraftLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe.ReferenceFrame;
 import eu.jgdi.mc.map2mc.model.raw.Tuple;
-import eu.jgdi.mc.map2mc.model.raw.World;
 import eu.jgdi.mc.map2mc.model.raw.WorldRaster;
 import eu.jgdi.mc.map2mc.model.raw.WorldSection;
-import eu.jgdi.mc.map2mc.model.raw.geolocation.Coordinate;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class WorldMapper {
@@ -28,32 +27,43 @@ public class WorldMapper {
      * @return whether there are intersecting surface chunks
      */
     public static Tuple<List<ChunkBuilder>> toChunkBuilders(
-            World world,
             WorldSection worldSection,
-            Map<ChunkLocation, ChunkBuilder> incompleteChunks) {
-
-        Coordinate worldOrigin = world.getArea().getOrigin();
-        Coordinate sectionOrigin = worldSection.getArea().getOrigin();
+            Map<ChunkLocation, ChunkBuilder> incompleteChunks,
+            Rectangle rectangle) {
 
         WorldRaster raster = worldSection.getRaster();
 
         Map<ChunkLocation, ChunkBuilder> chunkBuilderMap = new HashMap<>();
 
-        int iterationCount = raster.getWidth() * raster.getHeight();
-        logger.debug(
-                "Iterate over {0}x{1} pixel area ... ({2} steps)", raster.getWidth(), raster.getHeight(), iterationCount);
-        int count = 0;
-        for (int pixelY = 0; pixelY < raster.getHeight(); pixelY++) {
+        int startX = rectangle != null ? (int) (rectangle.getX()) : 0;
+        int startY = rectangle != null ? (int) (rectangle.getY()) : 0;
+        int maxX = rectangle != null ? (int) (rectangle.getX() + rectangle.getWidth()) : raster.getWidth();
+        int maxY = rectangle != null ? (int) (rectangle.getY() + rectangle.getHeight()) : raster.getHeight();
+        int iterationCount = (maxX - startX) * (maxY - startY);
+        logger.info(
+                "Area of map: ({0},{1}) - ({2},{3}) with a width of {4} and a height of {5}",
+                startX,
+                startY,
+                maxX,
+                maxY,
+                (maxX - startX),
+                (maxY - startY));
 
-            for (int pixelX = 0; pixelX < raster.getWidth(); pixelX++) {
+        logger.debug(
+                "Iterate over {0}x{1} pixel area ... ({2} steps)", (maxX - startX), (maxY - startY), iterationCount);
+
+        int count = 0;
+        for (int pixelY = startY; pixelY < maxY; pixelY++) {
+
+            for (int pixelX = startX; pixelX < maxX; pixelX++) {
                 count++;
                 if (count % 1000000 == 0) {
                     logger.debug("Iteration {0} of {1}", count, iterationCount);
                 }
 
                 // Now find what pixel that would be if we treat the whole world as one image:
-                double worldPixelX = pixelX + sectionOrigin.x - worldOrigin.x;
-                double worldPixelY = pixelY + sectionOrigin.y - worldOrigin.y;
+                double worldPixelX = pixelX;
+                double worldPixelY = pixelY;
 
                 Tuple<MinecraftLocation> locationTuple = new BlockLocation(
                         (int) (worldPixelX),

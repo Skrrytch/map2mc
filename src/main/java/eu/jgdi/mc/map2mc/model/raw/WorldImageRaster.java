@@ -3,13 +3,11 @@ package eu.jgdi.mc.map2mc.model.raw;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 
-import eu.jgdi.mc.map2mc.config.WorldConfig;
-import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class WorldImageRaster extends WorldRaster {
 
-    private static Logger logger = Logger.logger();
+    private static final Logger logger = Logger.logger();
 
     private final Raster terrainRaster;
 
@@ -19,18 +17,11 @@ public class WorldImageRaster extends WorldRaster {
 
     private final Raster biomeRaster;
 
-    private WorldRepository worldRepo;
-
-    private WorldConfig config;
-
     public WorldImageRaster(
-            WorldRepository worldRepo,
             BufferedImage terrain,
             BufferedImage surface,
             BufferedImage mountains,
             BufferedImage biomes) {
-        this.worldRepo = worldRepo;
-        this.config = worldRepo.getConfig();
         this.terrainRaster = terrain.getRaster();
         this.surfaceRaster = surface.getRaster();
         this.mountainsRaster = mountains != null ? mountains.getRaster() : null;

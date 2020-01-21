@@ -9,7 +9,7 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class Main {
 
-    private static Logger logger = Logger.logger();
+    private static final Logger logger = Logger.logger();
 
     public static void main(String[] args) {
 

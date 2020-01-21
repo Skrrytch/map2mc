@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import net.querz.nbt.CompoundTag;
 import net.querz.nbt.mca.Chunk;
@@ -29,11 +30,13 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class AnvilRegionRendererThread extends Thread {
 
+    private static final Logger logger = Logger.logger();
+
+    private final static List<String> DEFAULT_BLOCK_IDS = List.of("dirt");
+
     private final long fileNumber;
 
-    private Set<String> messages = new HashSet<>();
-
-    private static final Logger logger = Logger.logger();
+    private final Set<String> messages = new HashSet<>();
 
     private final CountDownLatch latch;
 
@@ -41,13 +44,9 @@ public class AnvilRegionRendererThread extends Thread {
 
     private final CompoundTag stoneCompound;
 
-    private final CompoundTag unknownCompound;
-
-    private final CompoundTag logCompound;
-
     private final CompoundTag bedrockCompound;
 
-    private String fileName;
+    private final String fileName;
 
     private RegionInfoMap regionInfoMap;
 
@@ -78,9 +77,7 @@ public class AnvilRegionRendererThread extends Thread {
         this.biomeCsvContent = config.getBiomesCsvContent();
         this.waterCompound = worldRepo.getBlockCompoundId(Block.WATER.getBlockId());
         this.stoneCompound = worldRepo.getBlockCompoundId(Block.STONE.getBlockId());
-        this.unknownCompound = worldRepo.getBlockCompoundId(Block.UNKNOWN.getBlockId());
         this.bedrockCompound = worldRepo.getBlockCompoundId(Block.BEDROCK.getBlockId());
-        this.logCompound = worldRepo.getBlockCompoundId(Block.OAK_LOG.getBlockId());
     }
 
     @Override
@@ -96,11 +93,10 @@ public class AnvilRegionRendererThread extends Thread {
 
     private void renderRegion() throws IOException {
 
-        int regionX = regionInfoMap.getLocation().getX();
-        int regionZ = regionInfoMap.getLocation().getZ();
+        int regionX = regionInfoMap.getLocation().getX() - (worldRepo.getConfig().getOriginX() / 512);
+        int regionZ = regionInfoMap.getLocation().getZ() - (worldRepo.getConfig().getOriginY() / 512);
         MCAFile region = new MCAFile(regionX, regionZ);
 
-        long chunkSize = Constants.REGION_LEN_Z * Constants.REGION_LEN_X;
         long chunkCount = 0;
         for (int z = 0; z < Constants.REGION_LEN_Z; z++) {
             for (int x = 0; x < Constants.REGION_LEN_X; x++) {
@@ -150,17 +146,21 @@ public class AnvilRegionRendererThread extends Thread {
                 byte mountainLevel = chunkInfoMap.getMountainLevel(x, z);
                 byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
 
-                TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
-                SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(surfaceIndex);
                 BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
+                TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
+                SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(
+                        surfaceIndex,
+                        biomeRecord != null ? biomeRecord.getBiomeName() : null);
 
                 int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
-                String surfaceBlockId = surfaceRecord != null ? surfaceRecord.getBlockId() : "dirt";
+                List<String> surfaceBlockIds = surfaceRecord != null ? surfaceRecord.getBlockIds() : DEFAULT_BLOCK_IDS;
                 int surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
 
                 int topLevel = seaLevel + terrainLevelOffset + mountainLevel;
 
-                CompoundTag block = worldRepo.getBlockCompoundId(surfaceBlockId);
+                List<CompoundTag> surfaceBlocks = surfaceBlockIds.stream()
+                        .map(id -> worldRepo.getBlockCompoundId(id))
+                        .collect(Collectors.toList());
 
                 CompoundTag additionalBlock = null;
                 int additionalBlockCount = 1;
@@ -183,12 +183,11 @@ public class AnvilRegionRendererThread extends Thread {
                 }
                 int currentLevel = 0;
                 if (terrainLevelOffset < 0) { // under water
-                    int stoneCount = Math.max(0, topLevel - surfaceDepth);
-                    int surfaceCount = Math.max(0, topLevel - stoneCount);
+                    int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
                     int waterDepth = Math.abs(terrainLevelOffset);
 
                     currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
+                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
                     currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
                     //                    if (additionalBlock != null) {
                     //                        setAdditionalBlock(currentLevel, chunk, x, z, additionalBlock);
@@ -196,11 +195,10 @@ public class AnvilRegionRendererThread extends Thread {
                 } else { // above water
                     buildStoneStack(currentLevel, chunk, x, z, 15);
 
-                    int stoneCount = Math.max(0, topLevel - surfaceDepth);
-                    int surfaceCount = Math.max(0, topLevel - stoneCount);
+                    int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
 
                     currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCount, block);
+                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
 
                     // additional block, e.g. a sapling
 
@@ -229,10 +227,6 @@ public class AnvilRegionRendererThread extends Thread {
         return currentLevel;
     }
 
-    private void setAdditionalBlock(int currentLevel, Chunk chunk, int x, int z, CompoundTag additionalCompound) {
-        chunk.setBlockStateAt(x, currentLevel, z, additionalCompound, false);
-    }
-
     private int buildWaterStack(int startLevel, Chunk chunk, int x, int z, int waterDepthCount) {
         int currentLevel = startLevel;
         for (int i = 0; i < waterDepthCount; i++) {
@@ -243,12 +237,14 @@ public class AnvilRegionRendererThread extends Thread {
     }
 
     private int buildSurfaceStack(
-            int startLevel, Chunk chunk, int x, int z, int landSurfaceCount, CompoundTag
-            surfaceBlock) {
+            int startLevel, Chunk chunk, int x, int z, int landSurfaceCount,
+            List<CompoundTag> surfaceBlocks) {
         int currentLevel = startLevel;
         for (int i = 0; i < landSurfaceCount; i++) {
-            chunk.setBlockStateAt(x, currentLevel, z, surfaceBlock, false);
-            currentLevel++;
+            for (CompoundTag surfaceBlock : surfaceBlocks) {
+                chunk.setBlockStateAt(x, currentLevel, z, surfaceBlock, false);
+                currentLevel++;
+            }
         }
         return currentLevel;
     }

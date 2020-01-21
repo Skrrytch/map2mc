@@ -3,8 +3,10 @@ package eu.jgdi.mc.map2mc.model.minecraft.coordinates.referenceframe;
 import java.util.Objects;
 
 public class FrameTransition {
-    public ReferenceFrame from;
-    public ReferenceFrame to;
+
+    public final ReferenceFrame from;
+
+    public final ReferenceFrame to;
 
     public FrameTransition(ReferenceFrame from, ReferenceFrame to) {
         this.from = from;

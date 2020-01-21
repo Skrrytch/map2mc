@@ -1,5 +1,6 @@
 package eu.jgdi.mc.map2mc.config;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,6 +52,12 @@ public class WorldConfig {
 
     private final int threadCount;
 
+    private Rectangle rectangle;
+
+    private int originX;
+
+    private int originY;
+
     public WorldConfig(File configFilePath, boolean initializeOnly) throws IOException {
         boolean configFileExists = false;
         SortedProperties properties = new SortedProperties();
@@ -61,9 +68,12 @@ public class WorldConfig {
         } catch (IOException ex) {
             logger.info("Config file does not exist. Creating one ...", configFilePath);
         }
-        this.baseLevel = (int) readLong(properties, "level.base", 40);
-        this.seaLevel = (int) readLong(properties, "level.sea", 20);
-        this.threadCount = (int) readLong(properties, "option.threadCount", 4);
+
+        this.baseLevel = readInteger(properties, "level.base", 40);
+        this.seaLevel = readInteger(properties, "level.sea", 20);
+        this.threadCount = readInteger(properties, "option.threadCount", 4);
+
+        // files
         this.fileTerrainImage = readString(properties, "file.terrain.image", "./terrain.bmp");
         this.fileTerrainCsv = readString(properties, "file.terrain.csv", "./terrain.csv");
         this.fileSurfaceImage = readString(properties, "file.surface.image", "./terrain.bmp");
@@ -73,6 +83,19 @@ public class WorldConfig {
         this.fileBiomesImage = readString(properties, "file.biomes.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
+
+        // origin position = point (0,0) in the Minecraft world
+        this.originX = readAndValidateCoordinateSystemValue(properties, "origin.x", 0);
+        this.originY = readAndValidateCoordinateSystemValue(properties, "origin.y", 0);
+
+        // Rectangle
+        int x = readAndValidateCoordinateSystemValue(properties, "rectangle.x", 0);
+        int y = readAndValidateCoordinateSystemValue(properties, "rectangle.y", 0);
+        int width = readAndValidateCoordinateSystemValue(properties, "rectangle.width", 0);
+        int height = readAndValidateCoordinateSystemValue(properties, "rectangle.height", 0);
+        if (width > 0 && height > 0) {
+            rectangle = new Rectangle(x, y, width, height);
+        }
 
         if (!configFileExists || initializeOnly) {
             FileOutputStream outStream = new FileOutputStream(configFilePath);
@@ -245,14 +268,28 @@ public class WorldConfig {
         return Boolean.parseBoolean(value);
     }
 
-    private long readLong(Properties properties, String name, long defaultValue) {
-        String value = properties.getProperty(name, null);
-        if (value == null) {
+    private int readAndValidateCoordinateSystemValue(Properties properties, String name, long defaultValue) {
+        String strValue = properties.getProperty(name, null);
+        if (strValue == null) {
             properties.setProperty(name, String.valueOf(defaultValue));
-            value = String.valueOf(defaultValue);
+            strValue = String.valueOf(defaultValue);
         }
-        logger.info("- {0} = {1}", name, value);
-        return Long.parseLong(value);
+        logger.info("- {0} = {1}", name, strValue);
+        int value = Integer.parseInt(strValue);
+        if (value % 512 != 0) {
+            throw new IllegalArgumentException("Value of '" + name + "' must be multiple of 512. " + value + " % 512 = " + (value % 512));
+        }
+        return value;
+    }
+
+    private int readInteger(Properties properties, String name, long defaultValue) {
+        String strValue = properties.getProperty(name, null);
+        if (strValue == null) {
+            properties.setProperty(name, String.valueOf(defaultValue));
+            strValue = String.valueOf(defaultValue);
+        }
+        logger.info("- {0} = {1}", name, strValue);
+        return Integer.parseInt(strValue);
     }
 
     private double readDouble(Properties properties, String name, double defaultValue) {
@@ -267,5 +304,17 @@ public class WorldConfig {
 
     public int getThreadCount() {
         return threadCount;
+    }
+
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
+
+    public int getOriginX() {
+        return originX;
+    }
+
+    public int getOriginY() {
+        return originY;
     }
 }

@@ -27,19 +27,21 @@ __Features:__
   - Specify probabilities with which the items are added
 - Supports a biome image and CSV mapping to defines biomes
   - Will set the corresponding biome on each position.
-  - Biomes will influence the way Minecraft renderes gras, tree and much more
+  - Biomes will influence the way Minecraft renderes gras and trees, spawn animals and monsters and more
+  - You can (optionally) define the surface depending on the biome: The same color may have different surface in different biomes.
+- Restrict the rendered area to a definable rectangle. This is useful for faster tests for a specific area of the map.
 - Calculate the world with several threads in parallel
+- Calculate just a part of the world (for faster testing)
+- Place the origin of the world (position [0,0]) on any of the possible 512/512 cross points on the map (e.b. at [1024,1536])
 - Save the Minecraft world directly to the 'saves' folder
 
 __Limitations:__
 
 - Getting the best out of existing maps is not easy.
-- The height and width of the maps (in pixels) must be multiples of 512
+- The height and width and the origin coorindates of the maps (in pixels) must be multiples of 512
 - A pixel is mapped 1:1 to a Minecraft block
-- The zero point of the Minecraft world is always the top left corner of the map
 - All texts are also rendered in the world
 - You can put 'saplings' but no trees. These have to grow first! (but there is a trick)
-
 
 __Example "SelfDrawn"__
 
