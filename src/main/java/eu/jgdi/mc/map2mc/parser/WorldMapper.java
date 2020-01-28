@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.BlockLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.ChunkLocation;
 import eu.jgdi.mc.map2mc.model.minecraft.coordinates.MinecraftLocation;
@@ -23,13 +24,16 @@ public class WorldMapper {
      * @param worldSection (in param): the worldsection
      * @param incompleteChunks (in/out param): chunks that are _not_ entirely inside this world section
      * and thus are incomplete
+     * @param worldRepo
      *
      * @return whether there are intersecting surface chunks
      */
     public static Tuple<List<ChunkBuilder>> toChunkBuilders(
             WorldSection worldSection,
             Map<ChunkLocation, ChunkBuilder> incompleteChunks,
-            Rectangle rectangle) {
+            WorldRepository worldRepo) {
+
+        Rectangle rectangle = worldRepo.getConfig().getRectangle();
 
         WorldRaster raster = worldSection.getRaster();
 
@@ -39,15 +43,26 @@ public class WorldMapper {
         int startY = rectangle != null ? (int) (rectangle.getY()) : 0;
         int maxX = rectangle != null ? (int) (rectangle.getX() + rectangle.getWidth()) : raster.getWidth();
         int maxY = rectangle != null ? (int) (rectangle.getY() + rectangle.getHeight()) : raster.getHeight();
+
+        worldRepo.setExtends(startX, startY, maxX, maxY);
+
         int iterationCount = (maxX - startX) * (maxY - startY);
         logger.info(
-                "Area of map: ({0},{1}) - ({2},{3}) with a width of {4} and a height of {5}",
+                "Area of map:   ({0,number,#},{1,number,#}) to ({2,number,#},{3,number,#}) with dimensions {4,number,#}x{5,number,#}",
                 startX,
                 startY,
                 maxX,
                 maxY,
-                (maxX - startX),
-                (maxY - startY));
+                maxX - startX,
+                maxY - startY);
+        logger.info(
+                "Area of world: ({0,number,#},{1,number,#}) to ({2,number,#},{3,number,#}) with dimensions {4,number,#}x{5,number,#}",
+                worldRepo.getWorldRectNorthWestX(),
+                worldRepo.getWorldRectNorthWestZ(),
+                worldRepo.getWorldRectSouthEastX(),
+                worldRepo.getWorldRectSouthEastZ(),
+                worldRepo.getWorldRectWidth(),
+                worldRepo.getWorldRectHeight());
 
         logger.debug(
                 "Iterate over {0}x{1} pixel area ... ({2} steps)", (maxX - startX), (maxY - startY), iterationCount);

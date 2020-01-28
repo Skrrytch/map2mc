@@ -58,6 +58,8 @@ public class WorldConfig {
 
     private int originY;
 
+    private boolean clearRegion;
+
     public WorldConfig(File configFilePath, boolean initializeOnly) throws IOException {
         boolean configFileExists = false;
         SortedProperties properties = new SortedProperties();
@@ -83,6 +85,7 @@ public class WorldConfig {
         this.fileBiomesImage = readString(properties, "file.biomes.image", null);
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
+        this.clearRegion = readBoolean(properties, "option.region.clear", true);
 
         // origin position = point (0,0) in the Minecraft world
         this.originX = readAndValidateCoordinateSystemValue(properties, "origin.x", 0);
@@ -110,9 +113,13 @@ public class WorldConfig {
         try {
             File file = buildFile(dirOutputRegion);
             if (file.exists()) {
-                FileUtils.deleteDirectory(file);
+                if (isClearRegion()) {
+                    FileUtils.deleteDirectory(file);
+                    file.mkdirs();
+                }
+            } else {
+                file.mkdirs();
             }
-            file.mkdirs();
 
             file = buildFile(dirOutputTmp);
             if (file.exists()) {
@@ -316,5 +323,9 @@ public class WorldConfig {
 
     public int getOriginY() {
         return originY;
+    }
+
+    public boolean isClearRegion() {
+        return clearRegion;
     }
 }

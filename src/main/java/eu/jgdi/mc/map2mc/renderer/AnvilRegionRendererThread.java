@@ -48,6 +48,10 @@ public class AnvilRegionRendererThread extends Thread {
 
     private final String fileName;
 
+    private final int baseLevel;
+
+    private final int seaLevel;
+
     private RegionInfoMap regionInfoMap;
 
     private WorldConfig config;
@@ -78,6 +82,8 @@ public class AnvilRegionRendererThread extends Thread {
         this.waterCompound = worldRepo.getBlockCompoundId(Block.WATER.getBlockId());
         this.stoneCompound = worldRepo.getBlockCompoundId(Block.STONE.getBlockId());
         this.bedrockCompound = worldRepo.getBlockCompoundId(Block.BEDROCK.getBlockId());
+        this.baseLevel = config.getBaseLevel();
+        this.seaLevel = config.getSeaLevel();
     }
 
     @Override
@@ -104,7 +110,7 @@ public class AnvilRegionRendererThread extends Thread {
                 ChunkLocation location = new ChunkLocation(x, z, ReferenceFrame.REGION);
                 ChunkInfoMap chunkInfoMap = regionInfoMap.getChunk(location);
 
-                Chunk chunk = renderChunk(chunkInfoMap);
+                Chunk chunk = renderChunk(chunkInfoMap, x, z, regionX, regionZ);
 
                 region.setChunk(x, z, chunk);
             }
@@ -122,95 +128,118 @@ public class AnvilRegionRendererThread extends Thread {
                 filePath.getFileName());
     }
 
-    private Chunk renderChunk(ChunkInfoMap chunkInfoMap) {
+    private Chunk renderChunk(ChunkInfoMap chunkInfoMap, int chunkX, int chunkZ, int regionX, int regionZ) {
+
+        int relRegionX = regionX * 512;
+        int relRegionZ = regionZ * 512;
+        int relChunkX = chunkX * 16;
+        int relChunkZ = chunkZ * 16;
 
         Chunk chunk = Chunk.newChunk();
-
-        int baseLevel = config.getBaseLevel();
-        int seaLevel = config.getSeaLevel();
-
         for (int z = 0; z < Constants.CHUNK_LEN_Z; z++) {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
+                int level;
                 boolean undefined = (chunkInfoMap.getFlagField(x, z) == 0);
                 if (undefined) {
-                    // We have no information about the blocks but the region is not finished
-                    // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
-                    int currentLevel = 0;
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, baseLevel);
-                    currentLevel = buildWaterStack(currentLevel, chunk, x, z, seaLevel);
-                    continue;
+                    level = buildBlocksForUndefined(z, x, chunk);
+                } else {
+                    level = buildBlocks(z, x, chunkInfoMap, chunk);
                 }
-
-                byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
-                byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
-                byte mountainLevel = chunkInfoMap.getMountainLevel(x, z);
-                byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
-
-                BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
-                TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
-                SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(
-                        surfaceIndex,
-                        biomeRecord != null ? biomeRecord.getBiomeName() : null);
-
-                int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
-                List<String> surfaceBlockIds = surfaceRecord != null ? surfaceRecord.getBlockIds() : DEFAULT_BLOCK_IDS;
-                int surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
-
-                int topLevel = seaLevel + terrainLevelOffset + mountainLevel;
-
-                List<CompoundTag> surfaceBlocks = surfaceBlockIds.stream()
-                        .map(id -> worldRepo.getBlockCompoundId(id))
-                        .collect(Collectors.toList());
-
-                CompoundTag additionalBlock = null;
-                int additionalBlockCount = 1;
-                if (surfaceRecord != null && surfaceRecord.hasAdditionalBlock()) {
-                    List<SurfaceCsvContent.AdditionalItem> additionalBlocks = surfaceRecord.getAdditionalBlocks();
-                    Optional<SurfaceCsvContent.AdditionalItem> itemToUse = additionalBlocks.stream()
-                            .filter(item -> Math.random() <= item.getFrequency())
-                            .findAny();
-                    if (itemToUse.isPresent()) {
-                        SurfaceCsvContent.AdditionalItem additionalItem = itemToUse.get();
-                        String additionalBlockId = additionalItem.getBlockId();
-                        Integer count = Block.EXPECTED_BLOCK_TYPES.get(additionalBlockId);
-                        additionalBlock = worldRepo.getBlockCompoundId(additionalBlockId);
-                        additionalBlockCount = count != null ? count : 1;
-                    }
-                }
-
-                if (biomeRecord != null && biomeRecord.getBiomeId() > 0) {
-                    chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
-                }
-                int currentLevel = 0;
-                if (terrainLevelOffset < 0) { // under water
-                    int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
-                    int waterDepth = Math.abs(terrainLevelOffset);
-
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
-                    currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
-                    //                    if (additionalBlock != null) {
-                    //                        setAdditionalBlock(currentLevel, chunk, x, z, additionalBlock);
-                    //                    }
-                } else { // above water
-                    buildStoneStack(currentLevel, chunk, x, z, 15);
-
-                    int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
-
-                    currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-                    currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
-
-                    // additional block, e.g. a sapling
-
-                    if (additionalBlock != null) {
-                        currentLevel = buildAdditionalBlock(currentLevel, chunk, x, z, additionalBlock, additionalBlockCount);
-                    }
+                int worldX = relRegionX + relChunkX + x;
+                int worldZ = relRegionZ + relChunkZ + z;
+                if (worldRepo.isNorthWestEdge(worldX, worldZ)) {
+                    worldRepo.setWorldRectNorthWestY(level);
+                } else if (worldRepo.isCenter(worldX, worldZ)) {
+                    worldRepo.setWorldRectCenterY(level);
+                } else if (worldRepo.isSouthEastEdge(worldX, worldZ)) {
+                    worldRepo.setWorldRectSouthEastY(level);
                 }
             }
         }
 
         chunk.cleanupPalettesAndBlockStates();
         return chunk;
+    }
+
+    private int buildBlocks(int z, int x, ChunkInfoMap chunkInfoMap, Chunk chunk) {
+        int level;
+        int currentLevel = 0;
+        byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
+        byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
+        byte mountainLevel = chunkInfoMap.getMountainLevel(x, z);
+        byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
+
+        BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
+        TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
+        SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(
+                surfaceIndex,
+                biomeRecord != null ? biomeRecord.getBiomeName() : null);
+
+        int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
+        List<String> surfaceBlockIds = surfaceRecord != null ? surfaceRecord.getBlockIds() : DEFAULT_BLOCK_IDS;
+        int surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
+
+        int topLevel = seaLevel + terrainLevelOffset + mountainLevel;
+
+        List<CompoundTag> surfaceBlocks = surfaceBlockIds.stream()
+                .map(id -> worldRepo.getBlockCompoundId(id))
+                .collect(Collectors.toList());
+
+        CompoundTag additionalBlock = null;
+        int additionalBlockCount = 1;
+        if (surfaceRecord != null && surfaceRecord.hasAdditionalBlock()) {
+            List<SurfaceCsvContent.AdditionalItem> additionalBlocks = surfaceRecord.getAdditionalBlocks();
+            Optional<SurfaceCsvContent.AdditionalItem> itemToUse = additionalBlocks.stream()
+                    .filter(item -> Math.random() <= item.getFrequency())
+                    .findAny();
+            if (itemToUse.isPresent()) {
+                SurfaceCsvContent.AdditionalItem additionalItem = itemToUse.get();
+                String additionalBlockId = additionalItem.getBlockId();
+                Integer count = Block.EXPECTED_BLOCK_TYPES.get(additionalBlockId);
+                additionalBlock = worldRepo.getBlockCompoundId(additionalBlockId);
+                additionalBlockCount = count != null ? count : 1;
+            }
+        }
+
+        if (biomeRecord != null) {
+            chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
+        }
+        if (terrainLevelOffset < 0) { // under water
+            int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
+            int waterDepth = Math.abs(terrainLevelOffset);
+
+            currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
+            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
+            currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
+            //                    if (additionalBlock != null) {no
+
+            //                        setAdditionalBlock(currentLevel, chunk, x, z, additionalBlock);
+            //                    }
+        } else { // above water
+            buildStoneStack(currentLevel, chunk, x, z, 15);
+
+            int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
+
+            currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
+            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
+
+            // additional block, e.g. a sapling
+
+            if (additionalBlock != null) {
+                currentLevel = buildAdditionalBlock(currentLevel, chunk, x, z, additionalBlock, additionalBlockCount);
+            }
+        }
+        level = currentLevel;
+        return level;
+    }
+
+    private int buildBlocksForUndefined(int z, int x, Chunk chunk) {
+        int currentLevel = 0;
+        // We have no information about the blocks but the region is not finished
+        // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
+        currentLevel = buildStoneStack(currentLevel, chunk, x, z, baseLevel);
+        currentLevel = buildWaterStack(currentLevel, chunk, x, z, seaLevel);
+        return currentLevel;
     }
 
     private int buildAdditionalBlock(

@@ -4,6 +4,7 @@ import java.io.File;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.model.minecraft.Block;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
@@ -39,6 +40,25 @@ public class Main {
 
         logger.info("Finished rendering in {0}", humanReadableFormat(duration));
         logger.info("Project: ''{0}''. Minecraft world files written to ''{1}''", directory.getName(), targetDirectory);
+
+        WorldRepository worldRepo = converter.getWorldRepo();
+        int level = worldRepo.getConfig().getBaseLevel() + worldRepo.getConfig().getSeaLevel();
+
+        logger.info(
+                "Center: /teleport {0,number,#} {1,number,#} {2,number,#}",
+                worldRepo.getWorldRectCenterX(),
+                worldRepo.getWorldRectCenterY(),
+                worldRepo.getWorldRectCenterZ());
+        logger.info(
+                "North west edge: /teleport {0,number,#} {1,number,#} {2,number,#}",
+                worldRepo.getWorldRectNorthWestX(),
+                worldRepo.getWorldRectNorthWestY(),
+                worldRepo.getWorldRectNorthWestZ());
+        logger.info(
+                "South east edge: /teleport {0,number,#} {1,number,#} {2,number,#}",
+                worldRepo.getWorldRectSouthEastX(),
+                worldRepo.getWorldRectSouthEastY(),
+                worldRepo.getWorldRectSouthEastZ());
     }
 
     public static String humanReadableFormat(Duration duration) {

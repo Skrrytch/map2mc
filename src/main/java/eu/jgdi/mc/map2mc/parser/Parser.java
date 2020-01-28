@@ -37,10 +37,11 @@ public class Parser {
 
         IntermediateOutput ioWriter = new IntermediateOutput(worldRepo.getConfig().getOutputTmpDirectory());
         WorldSection worldSection = world.getSection();
+
         Tuple<List<ChunkBuilder>> chunkBuilders = WorldMapper.toChunkBuilders(
                 worldSection,
                 incompleteChunks,
-                worldRepo.getConfig().getRectangle());
+                worldRepo);
         List<ChunkBuilder> completeChunks = chunkBuilders.first();
         List<ChunkBuilder> intersectingChunks = chunkBuilders.second();
         List<ChunkBuilder> updatedChunks = incompleteChunks.values().stream()

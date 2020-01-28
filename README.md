@@ -12,28 +12,34 @@ This tool is tested with Minecraft Java-Edition!
 
 __Features:__
 
-- Use a real height map to create the Minecraft landscape
-  - Each color in the palette determines a different height. Use a mapping file to determine this height yourself.
-  - Add a second (surface) map to determine the landscape types (block types).
-- Use a typical map to create the Minecraft landscape
+- Scenario 1: Use a real height map to create the Minecraft landscape
+  - Each color in the palette determines a different height, increasing with the index of each color 
+  - Optional you can use a mapping file to map the index of colors to heights 
+  - Add an additional (surface) map to determine the landscape types (block types).
+  - Add an additional (biome) map to determine the landscape biomes
+- Scenarion 2: Use a normal landscape map to create the Minecraft landscape
   - Use a mapping file to assign a height to each color.
-  - Add a mountain map to manipulate the heights on land
-- About landscape heights:
-  - Define the depth in the water and the heights on land
-  - Define the height of the general water surface
+  - Manipulate the heights with an additional mountain map
+  - Add an additional (biome) map to determine the landscape biomes
 - About block types:
-  - Define the depth of the block types on the surface, e.g. 3 sand (and then stone)
-  - Add items like grass, oak_sapling, orange_tulip, lantern ...
-  - Specify probabilities with which the items are added
-- Supports a biome image and CSV mapping to defines biomes
-  - Will set the corresponding biome on each position.
+  - Define the depth of the block types on the surface, e.g. 3 blocks sand (and then stone)
+  - Define a stack of block type (e.g. "stone+stone+sand+stone+sand+sand+grass_block")
+  - Add additional items on top of the surface, e.g. "grass" or "oak_sapling"
+    - Each item is added with a definable probability, e.g. "oak_sapling:5" (meaning 5% oak saplings)
+    - You can define multiple items like "oak_sapling:10,grass:50" (10% oak saplings and the rest with 50% grass)    
+- About mountains
+  - An additional mountain map modifies the height at each block position
+  - It is a real height map and uses the color index to define the heights (no mapping file needed) 
+- About biomes:
+  - An additional biome map will set the corresponding biome on each position.
   - Biomes will influence the way Minecraft renderes gras and trees, spawn animals and monsters and more
-  - You can (optionally) define the surface depending on the biome: The same color may have different surface in different biomes.
-- Restrict the rendered area to a definable rectangle. This is useful for faster tests for a specific area of the map.
-- Calculate the world with several threads in parallel
-- Calculate just a part of the world (for faster testing)
-- Place the origin of the world (position [0,0]) on any of the possible 512/512 cross points on the map (e.b. at [1024,1536])
-- Save the Minecraft world directly to the 'saves' folder
+  - And: You can (optionally) define the surface mapping depending on the biome: The same color may have different surface in different biomes.
+- More options:
+  - Restrict the rendered area to a definable rectangle. This is useful for faster tests for a specific area of the map.
+  - Calculate the world with several threads in parallel
+  - Place the origin of the world (position [0,0]) on any of the possible 512/512 cross points on the map (e.b. at [1024,1536])
+  - Save the Minecraft world directly to the 'saves' folder
+  - Render different parts (chunks) of the world and combine them 
 
 __Limitations:__
 

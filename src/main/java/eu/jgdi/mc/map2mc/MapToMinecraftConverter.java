@@ -67,4 +67,8 @@ public class MapToMinecraftConverter {
             return null;
         }
     }
+
+    public WorldRepository getWorldRepo() {
+        return worldRepo;
+    }
 }
