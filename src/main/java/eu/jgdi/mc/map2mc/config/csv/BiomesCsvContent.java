@@ -106,6 +106,12 @@ public class BiomesCsvContent extends AbstractCsvContent {
                     "Terrain definition: Use the color indexes of the terrain image and define their level" +
                             "(relative to the sea level");
             printer.printRecord(HEADER_INDEX, HEADER_BIOMEID, HEADER_BIOMENAME, HEADER_DESCR);
+            printer.printRecord("1", "13", "snnowy_mountains", "cold area with snow and ice");
+            printer.printRecord("2", "129", "sunflower_plains", "some plain land");
+            printer.printRecord("3", "21", "jungle", "a rain forest");
+            printer.printRecord("10", "44", "warm_ocean", "ocean im the south");
+            printer.printRecord("11", "0", "ocean", "Standard ocean, neither warn nor cold");
+            printer.printRecord("12", "10", "frozen_ocean", "very cold ocean in the north. Will build ice on it.");
         } catch (IOException ex) {
             throw new IllegalArgumentException("Failed to write CSV", ex);
         }

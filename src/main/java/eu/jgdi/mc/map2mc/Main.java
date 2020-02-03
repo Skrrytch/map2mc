@@ -2,6 +2,8 @@ package eu.jgdi.mc.map2mc;
 
 import java.io.File;
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import eu.jgdi.mc.map2mc.config.WorldRepository;
@@ -11,6 +13,8 @@ import eu.jgdi.mc.map2mc.utils.Logger;
 public class Main {
 
     private static final Logger logger = Logger.logger();
+
+    private static final DateTimeFormatter DATEFORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm:ss");
 
     public static void main(String[] args) {
 
@@ -38,12 +42,10 @@ public class Main {
         String targetDirectory = converter.renderWorld();
         duration = Duration.of(System.currentTimeMillis() - startedAt, ChronoUnit.MILLIS);
 
-        logger.info("Finished rendering in {0}", humanReadableFormat(duration));
+        logger.info("Finished rendering in {0} at {1}", humanReadableFormat(duration), ZonedDateTime.now().format(DATEFORMATTER));
         logger.info("Project: ''{0}''. Minecraft world files written to ''{1}''", directory.getName(), targetDirectory);
 
         WorldRepository worldRepo = converter.getWorldRepo();
-        int level = worldRepo.getConfig().getBaseLevel() + worldRepo.getConfig().getSeaLevel();
-
         logger.info(
                 "Center: /teleport {0,number,#} {1,number,#} {2,number,#}",
                 worldRepo.getWorldRectCenterX(),

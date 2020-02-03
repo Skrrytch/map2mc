@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -13,12 +15,71 @@ import org.apache.commons.io.FileUtils;
 import eu.jgdi.mc.map2mc.config.csv.BiomesCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
+import eu.jgdi.mc.map2mc.model.minecraft.Block;
 import eu.jgdi.mc.map2mc.utils.Logger;
 import eu.jgdi.mc.map2mc.utils.SortedProperties;
 
 public class WorldConfig {
 
     private static final Logger logger = Logger.logger();
+
+    public class NaturalResource {
+
+        private Block block;
+
+        private double percent;
+
+        private double percentFactor;
+
+        private int requiredTopLevel;
+
+        private int minLevel;
+
+        private int maxLevel;
+
+        public NaturalResource(Block block, double percent, int requiredTopLevel, int minLevel, int maxLevel) {
+            this.block = block;
+            this.percent = percent;
+            this.percentFactor = percent / 100d;
+            this.requiredTopLevel = requiredTopLevel;
+            this.minLevel = minLevel;
+            this.maxLevel = maxLevel;
+        }
+
+        public Block getBlock() {
+            return block;
+        }
+
+        public double getPercent() {
+            return percent;
+        }
+
+        public int getRequiredTopLevel() {
+            return requiredTopLevel;
+        }
+
+        public int getMinLevel() {
+            return minLevel;
+        }
+
+        public int getMaxLevel() {
+            return maxLevel;
+        }
+
+        public double getPercentFactor() {
+            return percentFactor;
+        }
+
+        public long getMaxStack() {
+            return maxLevel - minLevel;
+        }
+
+        public long calculateCurrentMaxStack(long baseTopLevel, long surfaceTopLevel) {
+            return Math.min(maxLevel, surfaceTopLevel) - Math.max(minLevel, baseTopLevel) + 1;
+        }
+    }
+
+    private List<NaturalResource> naturalResources;
 
     private String configPath;
 
@@ -71,6 +132,7 @@ public class WorldConfig {
             logger.info("Config file does not exist. Creating one ...", configFilePath);
         }
 
+        this.naturalResources = new ArrayList<>();
         this.baseLevel = readInteger(properties, "level.base", 40);
         this.seaLevel = readInteger(properties, "level.sea", 20);
         this.threadCount = readInteger(properties, "option.threadCount", 4);
@@ -86,6 +148,11 @@ public class WorldConfig {
         this.dirOutputTmp = readString(properties, "directory.output.tmp", "./tmp");
         this.dirOutputRegion = readString(properties, "directory.output.region", "./region");
         this.clearRegion = readBoolean(properties, "option.region.clear", true);
+        addNaturalResource(properties, "emerald", Block.EMERALD_ORE);
+        addNaturalResource(properties, "diamond", Block.DIAMOND_ORE);
+        addNaturalResource(properties, "gold", Block.GOLD_ORE);
+        addNaturalResource(properties, "iron", Block.IRON_ORE);
+        addNaturalResource(properties, "coal", Block.COAL_ORE);
 
         // origin position = point (0,0) in the Minecraft world
         this.originX = readAndValidateCoordinateSystemValue(properties, "origin.x", 0);
@@ -107,6 +174,21 @@ public class WorldConfig {
         }
 
         init(initializeOnly);
+    }
+
+    private void addNaturalResource(Properties properties, String name, Block block) {
+        int requiredTopLevel = readInteger(properties, "element." + name + ".requiredTopLevel", 255);
+        String levels = readString(properties, "element." + name + ".levels", "0");
+        String[] levelParts = levels.split("-");
+        int minLevel = Integer.parseInt(levelParts[0]);
+        int maxLevel = minLevel;
+        if (levelParts.length == 2) {
+            maxLevel = Integer.parseInt(levelParts[1]);
+        }
+        double percentage = readDouble(properties, "element." + name + ".percent", 0);
+        if (requiredTopLevel < 255 && maxLevel > 0 && percentage > 0) {
+            naturalResources.add(new NaturalResource(block, percentage, requiredTopLevel, minLevel, maxLevel));
+        }
     }
 
     private void init(boolean initializeOnly) {
@@ -147,12 +229,12 @@ public class WorldConfig {
             }
             file = buildFile(fileBiomesCsv);
             if (!file.exists()) {
-                logger.info("Surface CSV does not exist. Creating one ...");
+                logger.info("Biomes CSV does not exist. Creating one ...");
                 biomesCsvContent = BiomesCsvContent.createNew(file);
-                logger.info("Surface CSV created: {0}", file.getAbsolutePath());
+                logger.info("Biomes CSV created: {0}", file.getAbsolutePath());
             } else {
                 biomesCsvContent = BiomesCsvContent.loadExisting(file);
-                logger.info("Surface CSV loaded: {0}", file.getAbsolutePath());
+                logger.info("Biomes CSV loaded: {0}", file.getAbsolutePath());
             }
             file = buildFile(fileTerrainImage);
             if (!file.exists()) {
@@ -327,5 +409,9 @@ public class WorldConfig {
 
     public boolean isClearRegion() {
         return clearRegion;
+    }
+
+    public List<NaturalResource> getNaturalResources() {
+        return naturalResources;
     }
 }

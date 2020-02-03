@@ -5,10 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 
 import net.querz.nbt.CompoundTag;
 import net.querz.nbt.mca.Chunk;
@@ -19,6 +17,8 @@ import eu.jgdi.mc.map2mc.config.Constants;
 import eu.jgdi.mc.map2mc.config.WorldConfig;
 import eu.jgdi.mc.map2mc.config.WorldRepository;
 import eu.jgdi.mc.map2mc.config.csv.BiomesCsvContent;
+import eu.jgdi.mc.map2mc.config.csv.BlockStack;
+import eu.jgdi.mc.map2mc.config.csv.CompoundDef;
 import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
 import eu.jgdi.mc.map2mc.config.csv.TerrainCsvContent;
 import eu.jgdi.mc.map2mc.model.minecraft.Block;
@@ -32,19 +32,19 @@ public class AnvilRegionRendererThread extends Thread {
 
     private static final Logger logger = Logger.logger();
 
-    private final static List<String> DEFAULT_BLOCK_IDS = List.of("dirt");
-
     private final long fileNumber;
 
     private final Set<String> messages = new HashSet<>();
 
     private final CountDownLatch latch;
 
-    private final CompoundTag waterCompound;
+    private final CompoundDef defaultCompound;
 
-    private final CompoundTag stoneCompound;
+    private final CompoundDef waterCompound;
 
-    private final CompoundTag bedrockCompound;
+    private final CompoundDef stoneCompound;
+
+    private final CompoundDef bedrockCompound;
 
     private final String fileName;
 
@@ -79,9 +79,10 @@ public class AnvilRegionRendererThread extends Thread {
         this.terrainCsvContent = config.getTerrainCsvContent();
         this.surfaceCsvContent = config.getSurfaceCsvContent();
         this.biomeCsvContent = config.getBiomesCsvContent();
-        this.waterCompound = worldRepo.getBlockCompoundId(Block.WATER.getBlockId());
-        this.stoneCompound = worldRepo.getBlockCompoundId(Block.STONE.getBlockId());
-        this.bedrockCompound = worldRepo.getBlockCompoundId(Block.BEDROCK.getBlockId());
+        this.waterCompound = worldRepo.getBlockCompoundDef(Block.WATER.getBlockId());
+        this.stoneCompound = worldRepo.getBlockCompoundDef(Block.STONE.getBlockId());
+        this.bedrockCompound = worldRepo.getBlockCompoundDef(Block.BEDROCK.getBlockId());
+        this.defaultCompound = worldRepo.getBlockCompoundDef(Block.DIRT.getBlockId());
         this.baseLevel = config.getBaseLevel();
         this.seaLevel = config.getSeaLevel();
     }
@@ -139,14 +140,14 @@ public class AnvilRegionRendererThread extends Thread {
         for (int z = 0; z < Constants.CHUNK_LEN_Z; z++) {
             for (int x = 0; x < Constants.CHUNK_LEN_X; x++) {
                 int level;
+                int worldX = relRegionX + relChunkX + x;
+                int worldZ = relRegionZ + relChunkZ + z;
                 boolean undefined = (chunkInfoMap.getFlagField(x, z) == 0);
                 if (undefined) {
                     level = buildBlocksForUndefined(z, x, chunk);
                 } else {
-                    level = buildBlocks(z, x, chunkInfoMap, chunk);
+                    level = buildBlocks(z, x, chunkInfoMap, chunk, worldX, worldZ);
                 }
-                int worldX = relRegionX + relChunkX + x;
-                int worldZ = relRegionZ + relChunkZ + z;
                 if (worldRepo.isNorthWestEdge(worldX, worldZ)) {
                     worldRepo.setWorldRectNorthWestY(level);
                 } else if (worldRepo.isCenter(worldX, worldZ)) {
@@ -161,7 +162,7 @@ public class AnvilRegionRendererThread extends Thread {
         return chunk;
     }
 
-    private int buildBlocks(int z, int x, ChunkInfoMap chunkInfoMap, Chunk chunk) {
+    private int buildBlocks(int z, int x, ChunkInfoMap chunkInfoMap, Chunk chunk, int worldX, int worldZ) {
         int level;
         int currentLevel = 0;
         byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
@@ -171,124 +172,187 @@ public class AnvilRegionRendererThread extends Thread {
 
         BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
         TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
-        SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(
-                surfaceIndex,
-                biomeRecord != null ? biomeRecord.getBiomeName() : null);
+        SurfaceCsvContent.Record surfaceRecord = surfaceCsvContent.getByColorIndex(surfaceIndex);
+
+        if (surfaceRecord == null) {
+            logger.error("Unmapped  block at world position ({0},{1}),color index {2}", worldX, worldZ, surfaceIndex);
+        }
+        // get compounds from stack definition
+        List<CompoundDef> surfaceCompoundList = getSurfaceCompoundDefList(surfaceRecord);
+        List<CompoundDef> itemCompoundList = getItemCompoundDefList(surfaceRecord);
+
+        // Error logging
+        validateStack(surfaceCompoundList, worldX, worldZ, surfaceIndex);
+        validateStack(itemCompoundList, worldX, worldZ, surfaceIndex);
 
         int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
-        List<String> surfaceBlockIds = surfaceRecord != null ? surfaceRecord.getBlockIds() : DEFAULT_BLOCK_IDS;
-        int surfaceDepth = surfaceRecord != null ? surfaceRecord.getDepth() : 1;
-
         int topLevel = seaLevel + terrainLevelOffset + mountainLevel;
-
-        List<CompoundTag> surfaceBlocks = surfaceBlockIds.stream()
-                .map(id -> worldRepo.getBlockCompoundId(id))
-                .collect(Collectors.toList());
-
-        CompoundTag additionalBlock = null;
-        int additionalBlockCount = 1;
-        if (surfaceRecord != null && surfaceRecord.hasAdditionalBlock()) {
-            List<SurfaceCsvContent.AdditionalItem> additionalBlocks = surfaceRecord.getAdditionalBlocks();
-            Optional<SurfaceCsvContent.AdditionalItem> itemToUse = additionalBlocks.stream()
-                    .filter(item -> Math.random() <= item.getFrequency())
-                    .findAny();
-            if (itemToUse.isPresent()) {
-                SurfaceCsvContent.AdditionalItem additionalItem = itemToUse.get();
-                String additionalBlockId = additionalItem.getBlockId();
-                Integer count = Block.EXPECTED_BLOCK_TYPES.get(additionalBlockId);
-                additionalBlock = worldRepo.getBlockCompoundId(additionalBlockId);
-                additionalBlockCount = count != null ? count : 1;
-            }
-        }
-
         if (biomeRecord != null) {
             chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
         }
         if (terrainLevelOffset < 0) { // under water
-            int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
             int waterDepth = Math.abs(terrainLevelOffset);
-
-            currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
+            int stoneCount = baseLevel + Math.max(0, topLevel - surfaceCompoundList.size());
+            currentLevel = buildBaseStack(currentLevel, chunk, x, z, stoneCount, topLevel);
+            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCompoundList);
+            if (itemCompoundList != null) {
+                currentLevel = buildItemStack(currentLevel, chunk, x, z, itemCompoundList);
+                waterDepth -= itemCompoundList.size();
+            }
             currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
-            //                    if (additionalBlock != null) {no
-
-            //                        setAdditionalBlock(currentLevel, chunk, x, z, additionalBlock);
-            //                    }
         } else { // above water
-            buildStoneStack(currentLevel, chunk, x, z, 15);
+            int stoneCount = Math.max(0, topLevel - surfaceCompoundList.size());
 
-            int stoneCount = Math.max(0, topLevel - surfaceDepth * surfaceBlockIds.size());
-
-            currentLevel = buildStoneStack(currentLevel, chunk, x, z, stoneCount + baseLevel);
-            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceDepth, surfaceBlocks);
+            currentLevel = buildBaseStack(currentLevel, chunk, x, z, stoneCount + baseLevel, topLevel);
+            currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCompoundList);
 
             // additional block, e.g. a sapling
 
-            if (additionalBlock != null) {
-                currentLevel = buildAdditionalBlock(currentLevel, chunk, x, z, additionalBlock, additionalBlockCount);
+            if (itemCompoundList != null) {
+                currentLevel = buildItemStack(currentLevel, chunk, x, z, itemCompoundList);
             }
         }
         level = currentLevel;
         return level;
     }
 
+    private List<CompoundDef> getSurfaceCompoundDefList(SurfaceCsvContent.Record surfaceRecord) {
+        List<CompoundDef> surfaceCompoundList;
+        if (surfaceRecord != null) {
+            surfaceCompoundList = surfaceRecord.getSurfaceStack().getCompoundDefList();
+        } else {
+            surfaceCompoundList = List.of(defaultCompound);
+        }
+        return surfaceCompoundList;
+    }
+
+    private List<CompoundDef> getItemCompoundDefList(SurfaceCsvContent.Record surfaceRecord) {
+        if (surfaceRecord == null || !surfaceRecord.hasItems()) {
+            return null;
+        }
+        List<BlockStack> possibleItemStacks = surfaceRecord.getItemStackList();
+        return possibleItemStacks.stream()
+                .filter(stack -> Math.random() <= stack.getProbability()) // choose one of the stacks
+                .map(BlockStack::getCompoundDefList) // map to compound def list
+                .findAny() // probability match: Use this stack
+                .orElse(null); // no match: No item at all
+    }
+
+    private void validateStack(List<CompoundDef> compoundDefList, int worldX, int worldZ, byte surfaceIndex) {
+        if (compoundDefList == null) {
+            return;
+        }
+        compoundDefList.stream()
+                .filter(CompoundDef::isUndefined)
+                .distinct()
+                .forEach(def -> logger.error(
+                        "UNDEFINED block at world position ({0},{1}), color index {2}",
+                        worldX,
+                        worldZ,
+                        surfaceIndex));
+    }
+
     private int buildBlocksForUndefined(int z, int x, Chunk chunk) {
         int currentLevel = 0;
         // We have no information about the blocks but the region is not finished
         // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
-        currentLevel = buildStoneStack(currentLevel, chunk, x, z, baseLevel);
+        currentLevel = buildBaseStack(currentLevel, chunk, x, z, baseLevel, baseLevel);
         currentLevel = buildWaterStack(currentLevel, chunk, x, z, seaLevel);
         return currentLevel;
     }
 
-    private int buildAdditionalBlock(
-            int currentLevel,
+    private int buildItemStack(
+            int startLevel,
             Chunk chunk,
             int x,
             int z,
-            CompoundTag additionalCompound,
-            int additionalBlockCount) {
-        for (int i = 0; i < additionalBlockCount; i++) {
-            chunk.setBlockStateAt(x, currentLevel, z, additionalCompound, false);
-            currentLevel++;
+            List<CompoundDef> itemStack) {
+        if (itemStack == null) {
+            return startLevel;
         }
-        return currentLevel;
-    }
-
-    private int buildWaterStack(int startLevel, Chunk chunk, int x, int z, int waterDepthCount) {
         int currentLevel = startLevel;
-        for (int i = 0; i < waterDepthCount; i++) {
-            chunk.setBlockStateAt(x, currentLevel, z, waterCompound, false);
+        for (CompoundDef compountDef : itemStack) {
+            if (!compountDef.isAir()) {
+                chunk.setBlockStateAt(x, currentLevel, z, compountDef.getCompoundTag(), false);
+            }
             currentLevel++;
         }
         return currentLevel;
     }
 
     private int buildSurfaceStack(
-            int startLevel, Chunk chunk, int x, int z, int landSurfaceCount,
-            List<CompoundTag> surfaceBlocks) {
-        int currentLevel = startLevel;
-        for (int i = 0; i < landSurfaceCount; i++) {
-            for (CompoundTag surfaceBlock : surfaceBlocks) {
-                chunk.setBlockStateAt(x, currentLevel, z, surfaceBlock, false);
-                currentLevel++;
-            }
+            int startLevel, Chunk chunk, int x, int z,
+            List<CompoundDef> surfaceBlocks) {
+        if (surfaceBlocks == null || surfaceBlocks.isEmpty()) {
+            return startLevel;
         }
-        return currentLevel;
-    }
-
-    private int buildStoneStack(int startLevel, Chunk chunk, int x, int z, int stoneCount) {
         int currentLevel = startLevel;
-        for (int i = 0; i < stoneCount; i++) {
-            if (stoneCount > 3 && i < 3) {
-                chunk.setBlockStateAt(x, currentLevel, z, bedrockCompound, false);
-            } else {
-                chunk.setBlockStateAt(x, currentLevel, z, stoneCompound, false);
+        for (CompoundDef surfaceCompound : surfaceBlocks) {
+            if (!surfaceCompound.isAir()) {
+                chunk.setBlockStateAt(x, currentLevel, z, surfaceCompound.getCompoundTag(), false);
             }
             currentLevel++;
         }
         return currentLevel;
+    }
+
+    private int buildWaterStack(int startLevel, Chunk chunk, int x, int z, int waterDepthCount) {
+        if (waterDepthCount <= 0) {
+            return startLevel;
+        }
+        int currentLevel = startLevel;
+        for (int i = 0; i < waterDepthCount; i++) {
+            chunk.setBlockStateAt(x, currentLevel, z, waterCompound.getCompoundTag(), false);
+            currentLevel++;
+        }
+        return currentLevel;
+    }
+
+    private int buildBaseStack(int startLevel, Chunk chunk, int x, int z, int baseCount, int topLevelWithoutWater) {
+        int currentLevel = startLevel;
+        for (int i = 0; i < baseCount; i++) {
+            if (baseCount > 3 && i < 3) {
+                chunk.setBlockStateAt(x, currentLevel, z, bedrockCompound.getCompoundTag(), false);
+            } else {
+                CompoundTag compound = stoneCompound.getCompoundTag();
+                chunk.setBlockStateAt(x, currentLevel, z, compound, false);
+            }
+            currentLevel++;
+        }
+        enrichNaturalResources(chunk, x, z, baseLevel + topLevelWithoutWater);
+        return currentLevel;
+    }
+
+    /**
+     * example 1: 3% => (blockCount * 0.03) + (random-0.5)*(blockCount * 0.03)
+     * - 3% for 10 blocks = 0.3 + [-0.5...+0.5]*0.3 = 0.15 ... 0.45 (always 0)
+     * - 3% for 100 blocks = 3 +  [-0.5...+0.5]*(3/5) = 1.5 ... 4.5 (2 - 5)
+     * - 50% for 100 blocks = 50 + [-0.5...+0.5]*(50/5) = 40...60
+     */
+    private void enrichNaturalResources(Chunk chunk, int x, int z, int topLevelWithoutWater) {
+        for (WorldConfig.NaturalResource naturalResource : config.getNaturalResources()) {
+            if (naturalResource.getRequiredTopLevel() > topLevelWithoutWater) {
+                continue;
+            }
+            long maxStackCount = naturalResource.calculateCurrentMaxStack(3, topLevelWithoutWater);
+            double expectedAverage = maxStackCount * naturalResource.getPercentFactor();
+            long calculatedStackCount;
+            if (expectedAverage < 1) {
+                calculatedStackCount = Math.random() < expectedAverage ? 1 : 0;
+            } else {
+                double randomDiff = Math.random() - 0.5d;
+                calculatedStackCount = (int) (expectedAverage + randomDiff * expectedAverage / 2d);
+                calculatedStackCount = Math.min(calculatedStackCount, maxStackCount);
+            }
+            if (calculatedStackCount > 0) {
+                int startY = naturalResource.getMinLevel()
+                        + (int) Math.floor(Math.random() * (maxStackCount - calculatedStackCount));
+                CompoundDef blockCompoundDef = worldRepo.getBlockCompoundDef(naturalResource.getBlock().getBlockId());
+                for (int y = startY; y < startY + calculatedStackCount; y++) {
+                    chunk.setBlockStateAt(x, y, z, blockCompoundDef.getCompoundTag(), false);
+                }
+            }
+        }
     }
 
     public Set<String> getMessages() {

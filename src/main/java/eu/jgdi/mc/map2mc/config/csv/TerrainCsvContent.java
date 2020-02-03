@@ -95,6 +95,13 @@ public class TerrainCsvContent extends AbstractCsvContent {
                     "Terrain definition: Use the color indexes of the terrain image and define their level" +
                             "(relative to the sea level");
             printer.printRecord(HEADER_INDEX, HEADER_LEVEL, HEADER_DESCR);
+            printer.printRecord("1", "-3", "Water (3 levels deep)");
+            printer.printRecord("2", "-1", "Water (1 level deep)");
+            printer.printRecord("10", "0", "Landscape on water level");
+            printer.printRecord("16", "1", "Forsest, one block above water level");
+            printer.printRecord("21", "5", "Desert five blocks above water level");
+            printer.printRecord("42", "11", "Mountains, 11 blocks above water level");
+
         } catch (IOException ex) {
             throw new IllegalArgumentException("Failed to write CSV", ex);
         }

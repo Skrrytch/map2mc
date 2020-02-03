@@ -1,11 +1,25 @@
 package eu.jgdi.mc.map2mc.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.querz.nbt.CompoundTag;
 
+import eu.jgdi.mc.map2mc.config.csv.BlockStack;
+import eu.jgdi.mc.map2mc.config.csv.CompoundDef;
+import eu.jgdi.mc.map2mc.config.csv.SurfaceCsvContent;
+import eu.jgdi.mc.map2mc.model.minecraft.Block;
+import eu.jgdi.mc.map2mc.utils.Logger;
+
 public class WorldRepository {
+
+    private static final Logger logger = Logger.logger();
 
     private WorldConfig config;
 
@@ -31,23 +45,87 @@ public class WorldRepository {
 
     private int worldRectHeight;
 
-    private Map<String, CompoundTag> compoundTags = new HashMap<>();
+    private Map<String, CompoundDef> compoundDefMap = new HashMap<>();
 
     public WorldRepository(WorldConfig config) {
         this.config = config;
+        this.init();
+    }
+
+    private void init() {
+
+        Set<String> unknownBlockTypes = new HashSet<>();
+
+        Map<Integer, SurfaceCsvContent.Record> map = config.getSurfaceCsvContent().getMap();
+        for (SurfaceCsvContent.Record record : map.values()) {
+
+            // Surface blocks
+            BlockStack surfaceStack = record.getSurfaceStack();
+            List<CompoundDef> surfaceCompounds = new ArrayList<>();
+            for (String blockId : surfaceStack.getBlockIdList()) {
+                if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
+                    unknownBlockTypes.add(blockId);
+                }
+                surfaceCompounds.add(this.getBlockCompoundDef(blockId));
+            }
+            surfaceStack.setCompoundDefList(surfaceCompounds);
+
+            // Item blocks
+
+            if (record.hasItems()) {
+                for (BlockStack itemStack : record.getItemStackList()) {
+                    List<CompoundDef> itemCompounds = new ArrayList<>();
+                    for (String blockId : itemStack.getBlockIdList()) {
+                        if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
+                            unknownBlockTypes.add(blockId);
+                        }
+                        itemCompounds.add(this.getBlockCompoundDef(blockId));
+                    }
+                    itemStack.setCompoundDefList(itemCompounds);
+                }
+            }
+        }
+        List<String> unexpectedBlocks = unknownBlockTypes.stream().distinct().sorted().collect(Collectors.toList());
+        if (unexpectedBlocks.size() == 0) {
+            logger.info("All block types in surface csv are well known.");
+        } else {
+            logger.warn("{0} unexpected block types in suerface csv, please review!", unexpectedBlocks.size());
+            for (String unexpectedBlock : unexpectedBlocks) {
+                logger.warn("  {0}", unexpectedBlock);
+            }
+            System.out.println();
+            System.out.print("Please confirm that you want to proceed (type 'yes') ... ");
+            Scanner scanner = new Scanner(System.in);
+            String answer = scanner.nextLine();
+            if (!answer.equalsIgnoreCase("yes")) {
+                System.exit(0);
+            }
+            System.out.println();
+        }
     }
 
     public WorldConfig getConfig() {
         return config;
     }
 
-    public CompoundTag getBlockCompoundId(String id) {
-        if (!compoundTags.containsKey(id)) {
+    public CompoundDef getBlockCompoundDef(String id) {
+        if (!compoundDefMap.containsKey(id)) {
             CompoundTag compoundTag = new CompoundTag();
-            compoundTag.putString("Name", "minecraft:" + id);
-            compoundTags.put(id, compoundTag);
+            CompoundDef def = new CompoundDef(id, compoundTag);
+            if (id.equalsIgnoreCase(Block.UNDEFINED)) {
+                def.setUndefined(true);
+                // When you see gold ore on the surface, you have used colors that are mapped to "--UNDEFINED--"
+                compoundTag.putString("Name", "minecraft:" + Block.GOLD_ORE.getBlockId());
+            } else if (id.equalsIgnoreCase(Block.AIR)) {
+                def.setAir(true);
+                // When you see emerald ore on the surface, a bug exists that renderes air as a valid block
+                compoundTag.putString("Name", "minecraft:" + Block.EMERALD_ORE.getBlockId());
+            } else {
+                compoundTag.putString("Name", "minecraft:" + id);
+            }
+            compoundDefMap.put(id, def);
         }
-        return compoundTags.get(id);
+        return compoundDefMap.get(id);
     }
 
     public void setExtends(int mapStartX, int mapStartY, int mapMaxX, int mapMaxY) {

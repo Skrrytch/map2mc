@@ -4,22 +4,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
-import eu.jgdi.mc.map2mc.model.minecraft.Block;
 import eu.jgdi.mc.map2mc.utils.Logger;
 
 public class SurfaceCsvContent extends AbstractCsvContent {
@@ -28,114 +21,51 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
     private final static String HEADER_INDEX = "ColorIndex";
 
-    private final static String HEADER_BIOMENAME = "BiomeName";
+    private final static String HEADER_BLOCK = "Blocks";
 
-    private final static String HEADER_BLOCK = "Block";
-
-    private final static String HEADER_ADDITIONAL_BLOCK = "AdditionalBlocks";
-
-    private final static String HEADER_DEPTH = "Depth";
+    private final static String HEADER_ITEMS = "Items";
 
     private final static String HEADER_DESCR = "Description";
 
     private CSVFormat csvFormat;
 
-    private Map<String, Record> map;
-
-    public static class AdditionalItem {
-
-        String blockId;
-
-        float frequency;
-
-        public AdditionalItem(String blockId, float frequency) {
-            this.blockId = blockId;
-            this.frequency = frequency;
-        }
-
-        public String getBlockId() {
-            return blockId;
-        }
-
-        public float getFrequency() {
-            return frequency;
-        }
-    }
+    private Map<Integer, Record> map;
 
     public static class Record {
 
         private int colorIndex;
 
-        private List<String> blockIds;
+        private BlockStack blockStack;
 
-        private String biomeName;
-
-        private List<AdditionalItem> additionalBlocks;
-
-        private int depth;
+        private List<BlockStack> itemStackList;
 
         private String description;
 
         public Record(
                 int colorIndex,
-                String blockIdDef,
-                String biomeName,
-                String additionalBlockIdDef,
-                int depth,
+                String blockStackDef,
+                String itemStackListDef,
                 String description) {
             this.colorIndex = colorIndex;
-            this.blockIds = Arrays.stream(blockIdDef.split("\\+")).collect(Collectors.toList());
-            this.biomeName = biomeName;
-            this.additionalBlocks = additionalBlockIdDef.isEmpty() ? null : parseAdditionalBlock(additionalBlockIdDef);
-            this.depth = depth;
+            this.blockStack = BlockStack.parseStack(blockStackDef);
+            this.itemStackList = BlockStack.parseStacksWithProbability(itemStackListDef);
             this.description = description;
-        }
-
-        private List<AdditionalItem> parseAdditionalBlock(String additionalBlockIdDef) {
-            List<AdditionalItem> result = new ArrayList<>();
-            List<String> blockDefList = Arrays.stream(additionalBlockIdDef.split("/")).collect(Collectors.toList());
-            for (String blockDef : blockDefList) {
-                String blockId = splitBlockId(blockDef);
-                float frequency = splitFrequency(blockDef);
-                result.add(new AdditionalItem(blockId, frequency));
-            }
-            return result;
-        }
-
-        private float splitFrequency(String id) {
-            String[] parts = id.split(":");
-            if (parts.length < 2) {
-                return 1f;
-            }
-            return Integer.parseInt(parts[1]) / 100f;
-        }
-
-        private String splitBlockId(String id) {
-            return id.split(":")[0];
         }
 
         public int getColorIndex() {
             return colorIndex;
         }
 
-        public List<String> getBlockIds() {
-            return blockIds;
+        public BlockStack getSurfaceStack() {
+            return blockStack;
         }
 
-        public List<AdditionalItem> getAdditionalBlocks() {
-            return additionalBlocks;
+        public List<BlockStack> getItemStackList() {
+            return itemStackList;
         }
 
-        public boolean hasAdditionalBlock() {
-            return additionalBlocks != null && additionalBlocks.size() > 0;
-        }
-
-        public int getDepth() {
-            return depth;
-        }
-
-        public String getBiomeName() {
-            return biomeName;
+        public boolean hasItems() {
+            return itemStackList != null && itemStackList.size() > 0;
         }
 
         public String getDescription() {
@@ -148,15 +78,12 @@ public class SurfaceCsvContent extends AbstractCsvContent {
         this.map = new LinkedHashMap<>();
     }
 
-    public Record getByColorIndex(int surfaceColorIndex, String biomeName) {
-        Record record = null;
-        if (biomeName != null && !biomeName.isBlank()) {
-            record = map.get(surfaceColorIndex + "/" + biomeName);
-        }
-        if (record == null) {
-            record = map.get(String.valueOf(surfaceColorIndex));
-        }
-        return record;
+    public Record getByColorIndex(int surfaceColorIndex) {
+        return map.get(surfaceColorIndex);
+    }
+
+    public Map<Integer, Record> getMap() {
+        return map;
     }
 
     public static SurfaceCsvContent createNew(File file) {
@@ -172,65 +99,25 @@ public class SurfaceCsvContent extends AbstractCsvContent {
     }
 
     private void load(File file) {
-        Set<String> unknownBlockTypes = new HashSet<>();
         int row = 1;
         try {
             CSVParser parser = csvFormat.parse(new FileReader(file));
             for (CSVRecord csvRecord : parser.getRecords()) {
                 int colorIndexValue = readInt(csvRecord, HEADER_INDEX);
                 String blockId = csvRecord.get(HEADER_BLOCK);
-                String biomeName = csvRecord.get(HEADER_BIOMENAME);
-                int depth = readInt(csvRecord, HEADER_DEPTH, (byte) 1);
-                String additionalBlock = csvRecord.get(HEADER_ADDITIONAL_BLOCK);
+                String additionalBlock = csvRecord.get(HEADER_ITEMS);
                 String description = csvRecord.get(HEADER_DESCR);
                 Record record = new Record(
                         colorIndexValue,
-                        blockId.trim(),
-                        biomeName.trim(),
-                        additionalBlock.trim(),
-                        depth,
+                        blockId.trim().toLowerCase(),
+                        additionalBlock.trim().toLowerCase(),
                         description);
-                String key = biomeName.isEmpty() ? String.valueOf(colorIndexValue) : record.getColorIndex() + "/" + biomeName;
-                map.put(key, record);
-
-                validateBlocksTypes(unknownBlockTypes, record);
+                map.put(colorIndexValue, record);
 
                 row++;
             }
         } catch (RuntimeException | IOException e) {
             throw new IllegalArgumentException("Failed to read from file '" + file.getAbsolutePath() + "' at row " + row, e);
-        }
-
-        List<String> unexpectedBlocks = unknownBlockTypes.stream().distinct().sorted().collect(Collectors.toList());
-        if (unexpectedBlocks.size() == 0) {
-            logger.info("All block types in surface csv are well known.");
-        } else {
-            logger.warn("{0} unexpected block types in suerface csv, please review!", unexpectedBlocks.size());
-            for (String unexpectedBlock : unexpectedBlocks) {
-                logger.warn("  {0}", unexpectedBlock);
-            }
-            System.out.println();
-            System.out.print("Please confirm that you want to proceed (type 'yes') ... ");
-            Scanner scanner = new Scanner(System.in);
-            String answer = scanner.nextLine();
-            if (!answer.equalsIgnoreCase("yes")) {
-                System.exit(0);
-            }
-            System.out.println();
-        }
-    }
-
-    private void validateBlocksTypes(Set<String> unknownBlockTypes, Record record) {
-        List<String> blockIds = record.getBlockIds();
-        for (String blockId : blockIds) {
-            if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
-                unknownBlockTypes.add(blockId);
-            }
-        }
-        if (record.hasAdditionalBlock()) {
-            record.getAdditionalBlocks().stream()
-                    .filter(item -> !Block.EXPECTED_BLOCK_TYPES.containsKey(item.getBlockId()))
-                    .forEach(item -> unknownBlockTypes.add(item.getBlockId()));
         }
     }
 
@@ -266,7 +153,24 @@ public class SurfaceCsvContent extends AbstractCsvContent {
 
     private void store(File file) {
         try (CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.EXCEL)) {
-            printer.printRecord(HEADER_INDEX, HEADER_BIOMENAME, HEADER_BLOCK, HEADER_DEPTH, HEADER_DESCR);
+            printer.printRecord(HEADER_INDEX, HEADER_BLOCK, HEADER_ITEMS, HEADER_DESCR);
+            printer.printRecord("0", "--UNDEFINED--", "", "1", "Use --UNDEFINED-- when you do not use the color yet.");
+            printer.printRecord("1", "sand", "", "1", "Sand (1 blocks deep)");
+            printer.printRecord("2", "sand", "", "3", "Sand (3 blocks deep)");
+            printer.printRecord("10", "grass_block", "grass", "1", "Grassblock with 100% grass on it");
+            printer.printRecord(
+                    "16",
+                    "grass_block",
+                    "oak_sapling:5/fern:15",
+                    "1",
+                    "Grassblock with an OAK sapling (5%), otherwise Fern (15%)");
+            printer.printRecord("21", "sand", "cactus:1", "5", "Sand (5 blocks deep) with 1% cactus on it");
+            printer.printRecord(
+                    "42",
+                    "stone+granite+granite",
+                    "",
+                    "3",
+                    "Stack of 1x stone and 2x granite (3 times deep) -> altogether 9 blocks deep");
         } catch (IOException ex) {
             throw new IllegalArgumentException("Failed to write CSV", ex);
         }
