@@ -44,7 +44,7 @@ public class BlockStack {
         if (stackAndProbability.length > 2) {
             throw new IllegalArgumentException("Block stack list definition not valid: '" + blockStackAsString + "'");
         }
-        float probability = stackAndProbability.length >= 2 ? Integer.parseInt(stackAndProbability[1]) / 100f : 1f;
+        float probability = stackAndProbability.length >= 2 ? Integer.parseInt(stackAndProbability[1].trim()) / 100f : 1f;
 
         // Now lets see if we have a list of blocks separated by comma
         // Example: '2*oak_log,lantern'

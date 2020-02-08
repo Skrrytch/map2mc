@@ -107,13 +107,15 @@ public class WorldConfig {
 
     private BiomesCsvContent biomesCsvContent;
 
+    private final int mountainsLevelStart;
+
     private final int seaLevel;
 
     private final int baseLevel;
 
     private final int threadCount;
 
-    private Rectangle rectangle;
+    private Rectangle area;
 
     private int originX;
 
@@ -134,7 +136,8 @@ public class WorldConfig {
 
         this.naturalResources = new ArrayList<>();
         this.baseLevel = readInteger(properties, "level.base", 40);
-        this.seaLevel = readInteger(properties, "level.sea", 20);
+        this.seaLevel = readInteger(properties, "level.water", 20);
+        this.mountainsLevelStart = readInteger(properties, "level.mountains-start", 0);
         this.threadCount = readInteger(properties, "option.threadCount", 4);
 
         // files
@@ -159,12 +162,17 @@ public class WorldConfig {
         this.originY = readAndValidateCoordinateSystemValue(properties, "origin.y", 0);
 
         // Rectangle
-        int x = readAndValidateCoordinateSystemValue(properties, "rectangle.x", 0);
-        int y = readAndValidateCoordinateSystemValue(properties, "rectangle.y", 0);
-        int width = readAndValidateCoordinateSystemValue(properties, "rectangle.width", 0);
-        int height = readAndValidateCoordinateSystemValue(properties, "rectangle.height", 0);
-        if (width > 0 && height > 0) {
-            rectangle = new Rectangle(x, y, width, height);
+        boolean areaActive = readBoolean(properties, "area.active", false);
+        if (areaActive) {
+            int x = readAndValidateCoordinateSystemValue(properties, "area.x", 0);
+            int y = readAndValidateCoordinateSystemValue(properties, "area.y", 0);
+            int width = readAndValidateCoordinateSystemValue(properties, "area.width", 0);
+            int height = readAndValidateCoordinateSystemValue(properties, "area.height", 0);
+            if (width > 0 && height > 0) {
+                area = new Rectangle(x, y, width, height);
+            }
+        } else {
+            area = null;
         }
 
         if (!configFileExists || initializeOnly) {
@@ -335,6 +343,10 @@ public class WorldConfig {
         return baseLevel;
     }
 
+    public int getMountainsLevelStart() {
+        return mountainsLevelStart;
+    }
+
     private String readString(Properties properties, String name, String defaultValue) {
         String value = properties.getProperty(name, null);
         if (value == null) {
@@ -395,8 +407,8 @@ public class WorldConfig {
         return threadCount;
     }
 
-    public Rectangle getRectangle() {
-        return rectangle;
+    public Rectangle getArea() {
+        return area;
     }
 
     public int getOriginX() {
