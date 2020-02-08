@@ -33,7 +33,7 @@ public class WorldMapper {
             Map<ChunkLocation, ChunkBuilder> incompleteChunks,
             WorldRepository worldRepo) {
 
-        Rectangle rectangle = worldRepo.getConfig().getRectangle();
+        Rectangle rectangle = worldRepo.getConfig().getArea();
 
         WorldRaster raster = worldSection.getRaster();
 

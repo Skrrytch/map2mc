@@ -167,7 +167,7 @@ public class AnvilRegionRendererThread extends Thread {
         int currentLevel = 0;
         byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
         byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
-        byte mountainLevel = chunkInfoMap.getMountainLevel(x, z);
+        byte mountainIndex = chunkInfoMap.getMountainLevel(x, z);
         byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
 
         BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
@@ -185,8 +185,9 @@ public class AnvilRegionRendererThread extends Thread {
         validateStack(surfaceCompoundList, worldX, worldZ, surfaceIndex);
         validateStack(itemCompoundList, worldX, worldZ, surfaceIndex);
 
+        int mountainLevelStart = mountainIndex + config.getMountainsLevelStart();
         int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
-        int topLevel = seaLevel + terrainLevelOffset + mountainLevel;
+        int topLevel = seaLevel + terrainLevelOffset + mountainLevelStart;
         if (biomeRecord != null) {
             chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
         }
