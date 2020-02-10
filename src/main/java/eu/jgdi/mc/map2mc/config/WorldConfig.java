@@ -158,22 +158,12 @@ public class WorldConfig {
         addNaturalResource(properties, "coal", Block.COAL_ORE);
 
         // origin position = point (0,0) in the Minecraft world
-        this.originX = readAndValidateCoordinateSystemValue(properties, "origin.x", 0);
-        this.originY = readAndValidateCoordinateSystemValue(properties, "origin.y", 0);
+        int[] originPoint = readPoint(properties, "origin", "(0,0)");
+        this.originX = originPoint[0];
+        this.originY = originPoint[1];
 
         // Rectangle
-        boolean areaActive = readBoolean(properties, "area.active", false);
-        if (areaActive) {
-            int x = readAndValidateCoordinateSystemValue(properties, "area.x", 0);
-            int y = readAndValidateCoordinateSystemValue(properties, "area.y", 0);
-            int width = readAndValidateCoordinateSystemValue(properties, "area.width", 0);
-            int height = readAndValidateCoordinateSystemValue(properties, "area.height", 0);
-            if (width > 0 && height > 0) {
-                area = new Rectangle(x, y, width, height);
-            }
-        } else {
-            area = null;
-        }
+        area = readArea(properties);
 
         if (!configFileExists || initializeOnly) {
             FileOutputStream outStream = new FileOutputStream(configFilePath);
@@ -182,6 +172,33 @@ public class WorldConfig {
         }
 
         init(initializeOnly);
+    }
+
+    private int[] readPoint(SortedProperties properties, String name, String defaultValue) {
+        String pointStr = readString(properties, name, defaultValue);
+        return parsePoint(pointStr);
+    }
+
+    private Rectangle readArea(Properties properties) {
+        String area = readString(properties, "area", "");
+        if (area == null || area.isBlank()) {
+            return null;
+        }
+        String[] points = area.split("-");
+        if (points.length != 2) {
+            logger.error("Wrong area format. Expected: '(x1,y2)-(x2,y2)' but is: '" + area + "'");
+        }
+        int[] p1 = parsePoint(points[0]);
+        int[] p2 = parsePoint(points[1]);
+        validateCoordinateSystemValue("area (x1)", p1[0]);
+        validateCoordinateSystemValue("area (y1)", p1[1]);
+        validateCoordinateSystemValue("area (x2)", p2[0]);
+        validateCoordinateSystemValue("area (y2)", p2[1]);
+        return new Rectangle(
+                Math.min(p1[0], p2[0]),
+                Math.min(p1[1], p2[1]),
+                Math.abs(p2[0] - p1[0]),
+                Math.abs(p2[1] - p1[1]));
     }
 
     private void addNaturalResource(Properties properties, String name, Block block) {
@@ -377,10 +394,14 @@ public class WorldConfig {
         }
         logger.info("- {0} = {1}", name, strValue);
         int value = Integer.parseInt(strValue);
+        validateCoordinateSystemValue(name, value);
+        return value;
+    }
+
+    private void validateCoordinateSystemValue(String name, long value) {
         if (value % 512 != 0) {
             throw new IllegalArgumentException("Value of '" + name + "' must be multiple of 512. " + value + " % 512 = " + (value % 512));
         }
-        return value;
     }
 
     private int readInteger(Properties properties, String name, long defaultValue) {
@@ -425,5 +446,20 @@ public class WorldConfig {
 
     public List<NaturalResource> getNaturalResources() {
         return naturalResources;
+    }
+
+    private int[] parsePoint(String point) {
+        if (point.startsWith("(") && point.endsWith(")")) {
+            String[] str = point.substring(1, point.length() - 1).split(",");
+            if (str.length != 2) {
+                throw new IllegalArgumentException("Point '" + point + "' with unexpected format. Expecting '(x,y)'");
+            }
+            int[] result = new int[2];
+            result[0] = Integer.parseInt(str[0]);
+            result[1] = Integer.parseInt(str[1]);
+            return result;
+        } else {
+            throw new IllegalArgumentException("Point '" + point + "' with unexpected format. Expecting '(x,y)'");
+        }
     }
 }
