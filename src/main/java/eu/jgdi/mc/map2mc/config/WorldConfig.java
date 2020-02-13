@@ -74,8 +74,8 @@ public class WorldConfig {
             return maxLevel - minLevel;
         }
 
-        public long calculateCurrentMaxStack(long baseTopLevel, long surfaceTopLevel) {
-            return Math.min(maxLevel, surfaceTopLevel) - Math.max(minLevel, baseTopLevel) + 1;
+        public long calculateCurrentMaxStack(long baseTopLevel, long maxTopLevel) {
+            return Math.min(maxLevel, maxTopLevel) - Math.max(minLevel, baseTopLevel) + 1;
         }
     }
 
@@ -109,7 +109,7 @@ public class WorldConfig {
 
     private final int mountainsLevelStart;
 
-    private final int seaLevel;
+    private final int waterLevel;
 
     private final int baseLevel;
 
@@ -136,7 +136,7 @@ public class WorldConfig {
 
         this.naturalResources = new ArrayList<>();
         this.baseLevel = readInteger(properties, "level.base", 40);
-        this.seaLevel = readInteger(properties, "level.water", 20);
+        this.waterLevel = readInteger(properties, "level.water", 20);
         this.mountainsLevelStart = readInteger(properties, "level.mountains-start", 0);
         this.threadCount = readInteger(properties, "option.threadCount", 4);
 
@@ -352,8 +352,8 @@ public class WorldConfig {
         return biomesCsvContent;
     }
 
-    public int getSeaLevel() {
-        return seaLevel;
+    public int getWaterLevel() {
+        return waterLevel;
     }
 
     public int getBaseLevel() {

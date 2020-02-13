@@ -84,7 +84,7 @@ public class AnvilRegionRendererThread extends Thread {
         this.bedrockCompound = worldRepo.getBlockCompoundDef(Block.BEDROCK.getBlockId());
         this.defaultCompound = worldRepo.getBlockCompoundDef(Block.DIRT.getBlockId());
         this.baseLevel = config.getBaseLevel();
-        this.seaLevel = config.getSeaLevel();
+        this.seaLevel = config.getWaterLevel();
     }
 
     @Override
@@ -185,30 +185,28 @@ public class AnvilRegionRendererThread extends Thread {
         validateStack(surfaceCompoundList, worldX, worldZ, surfaceIndex);
         validateStack(itemCompoundList, worldX, worldZ, surfaceIndex);
 
-        int mountainLevelStart = mountainIndex + config.getMountainsLevelStart();
+        int mountainLevelDiff = mountainIndex + config.getMountainsLevelStart();
         int terrainLevelOffset = terrainRecord != null ? terrainRecord.getLevel() : terrainIndex - seaLevel;
-        int topLevel = seaLevel + terrainLevelOffset + mountainLevelStart;
+        int topSurfaceLevel = seaLevel + terrainLevelOffset + mountainLevelDiff;
         if (biomeRecord != null) {
             chunk.setBiomeAt(x, z, biomeRecord.getBiomeId()); // jungle
         }
         if (terrainLevelOffset < 0) { // under water
             int waterDepth = Math.abs(terrainLevelOffset);
-            int stoneCount = baseLevel + Math.max(0, topLevel - surfaceCompoundList.size());
-            currentLevel = buildBaseStack(currentLevel, chunk, x, z, stoneCount, topLevel);
+            int stoneCount = Math.max(0, topSurfaceLevel - surfaceCompoundList.size());
+            currentLevel = buildStoneAndResourcesStack(currentLevel, chunk, x, z, baseLevel + stoneCount, topSurfaceLevel);
             currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCompoundList);
+            // additional blocks, e.g. a seagrass etc.
             if (itemCompoundList != null) {
                 currentLevel = buildItemStack(currentLevel, chunk, x, z, itemCompoundList);
                 waterDepth -= itemCompoundList.size();
             }
             currentLevel = buildWaterStack(currentLevel, chunk, x, z, waterDepth);
         } else { // above water
-            int stoneCount = Math.max(0, topLevel - surfaceCompoundList.size());
-
-            currentLevel = buildBaseStack(currentLevel, chunk, x, z, stoneCount + baseLevel, topLevel);
+            int stoneCount = Math.max(0, topSurfaceLevel - surfaceCompoundList.size());
+            currentLevel = buildStoneAndResourcesStack(currentLevel, chunk, x, z, baseLevel + stoneCount, topSurfaceLevel);
             currentLevel = buildSurfaceStack(currentLevel, chunk, x, z, surfaceCompoundList);
-
-            // additional block, e.g. a sapling
-
+            // additional blocks, e.g. a sapling, lantern etc.
             if (itemCompoundList != null) {
                 currentLevel = buildItemStack(currentLevel, chunk, x, z, itemCompoundList);
             }
@@ -257,7 +255,7 @@ public class AnvilRegionRendererThread extends Thread {
         int currentLevel = 0;
         // We have no information about the blocks but the region is not finished
         // In this case we build standard stone blocks of baselevel height and water blocks of seaLevel height
-        currentLevel = buildBaseStack(currentLevel, chunk, x, z, baseLevel, baseLevel);
+        currentLevel = buildStoneAndResourcesStack(currentLevel, chunk, x, z, baseLevel, baseLevel);
         currentLevel = buildWaterStack(currentLevel, chunk, x, z, seaLevel);
         return currentLevel;
     }
@@ -309,10 +307,10 @@ public class AnvilRegionRendererThread extends Thread {
         return currentLevel;
     }
 
-    private int buildBaseStack(int startLevel, Chunk chunk, int x, int z, int baseCount, int topLevelWithoutWater) {
+    private int buildStoneAndResourcesStack(int startLevel, Chunk chunk, int x, int z, int stoneCount, int topLevelWithoutWater) {
         int currentLevel = startLevel;
-        for (int i = 0; i < baseCount; i++) {
-            if (baseCount > 3 && i < 3) {
+        for (int i = 0; i < stoneCount; i++) {
+            if (stoneCount > 3 && i < 3) {
                 chunk.setBlockStateAt(x, currentLevel, z, bedrockCompound.getCompoundTag(), false);
             } else {
                 CompoundTag compound = stoneCompound.getCompoundTag();
@@ -320,7 +318,7 @@ public class AnvilRegionRendererThread extends Thread {
             }
             currentLevel++;
         }
-        enrichNaturalResources(chunk, x, z, baseLevel + topLevelWithoutWater);
+        enrichNaturalResources(chunk, x, z, stoneCount, baseLevel + topLevelWithoutWater);
         return currentLevel;
     }
 
@@ -330,12 +328,12 @@ public class AnvilRegionRendererThread extends Thread {
      * - 3% for 100 blocks = 3 +  [-0.5...+0.5]*(3/5) = 1.5 ... 4.5 (2 - 5)
      * - 50% for 100 blocks = 50 + [-0.5...+0.5]*(50/5) = 40...60
      */
-    private void enrichNaturalResources(Chunk chunk, int x, int z, int topLevelWithoutWater) {
+    private void enrichNaturalResources(Chunk chunk, int x, int z, int maxLevel, int topLevelWithoutWater) {
         for (WorldConfig.NaturalResource naturalResource : config.getNaturalResources()) {
             if (naturalResource.getRequiredTopLevel() > topLevelWithoutWater) {
                 continue;
             }
-            long maxStackCount = naturalResource.calculateCurrentMaxStack(3, topLevelWithoutWater);
+            long maxStackCount = naturalResource.calculateCurrentMaxStack(3, maxLevel);
             double expectedAverage = maxStackCount * naturalResource.getPercentFactor();
             long calculatedStackCount;
             if (expectedAverage < 1) {

@@ -63,7 +63,7 @@ public class WorldRepository {
             BlockStack surfaceStack = record.getSurfaceStack();
             List<CompoundDef> surfaceCompounds = new ArrayList<>();
             for (String blockId : surfaceStack.getBlockIdList()) {
-                if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
+                if (!Block.BLOCK_INFO.containsKey(blockId)) {
                     unknownBlockTypes.add(blockId);
                 }
                 surfaceCompounds.add(this.getBlockCompoundDef(blockId));
@@ -76,7 +76,7 @@ public class WorldRepository {
                 for (BlockStack itemStack : record.getItemStackList()) {
                     List<CompoundDef> itemCompounds = new ArrayList<>();
                     for (String blockId : itemStack.getBlockIdList()) {
-                        if (!Block.EXPECTED_BLOCK_TYPES.containsKey(blockId)) {
+                        if (!Block.BLOCK_INFO.containsKey(blockId)) {
                             unknownBlockTypes.add(blockId);
                         }
                         itemCompounds.add(this.getBlockCompoundDef(blockId));

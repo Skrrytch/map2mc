@@ -117,7 +117,7 @@ public class Main {
 
     private static void displayKnownBlocks() {
         System.out.println("List of known blocks (there are many other that are also supported)");
-        Block.EXPECTED_BLOCK_TYPES.keySet().stream()
+        Block.BLOCK_INFO.keySet().stream()
                 .sorted().forEach(blockId -> System.out.println("  " + blockId));
     }
 }
