@@ -36,6 +36,8 @@ public enum Block {
             entry(AIR, BlockTick.STATIC), // do not warn, wenn some mappings are undefined
             // Blocks:
             entry("acacia_sapling", BlockTick.STATIC),
+            entry("acacia_planks", BlockTick.STATIC),
+            entry("acacia_log", BlockTick.STATIC),
             entry("allium", BlockTick.STATIC),
             entry("andesite", BlockTick.STATIC),
             entry("azure_bluet", BlockTick.STATIC),
@@ -116,6 +118,7 @@ public enum Block {
             entry("lava", BlockTick.STATIC),
             entry("light_blue_concrete", BlockTick.STATIC),
             entry("light_blue_concrete_powder", BlockTick.STATIC),
+            entry("light_gray_concrete_powder", BlockTick.STATIC),
             entry("lilac", BlockTick.STATIC),
             entry("lily_of_the_valley", BlockTick.STATIC),
             entry("magenta_concrete", BlockTick.STATIC),

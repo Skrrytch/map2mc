@@ -165,10 +165,10 @@ public class AnvilRegionRendererThread extends Thread {
     private int buildBlocks(int z, int x, ChunkInfoMap chunkInfoMap, Chunk chunk, int worldX, int worldZ) {
         int level;
         int currentLevel = 0;
-        byte terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
-        byte surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
-        byte mountainIndex = chunkInfoMap.getMountainLevel(x, z);
-        byte biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
+        int terrainIndex = chunkInfoMap.getTerrainIndex(x, z);
+        int surfaceIndex = chunkInfoMap.getSurfaceIndex(x, z);
+        int mountainIndex = chunkInfoMap.getMountainLevel(x, z);
+        int biomeIndex = chunkInfoMap.getBiomeIndex(x, z);
 
         BiomesCsvContent.Record biomeRecord = biomeCsvContent.getByColorIndex(biomeIndex);
         TerrainCsvContent.Record terrainRecord = terrainCsvContent.getByColorIndex(terrainIndex);
@@ -237,7 +237,7 @@ public class AnvilRegionRendererThread extends Thread {
                 .orElse(null); // no match: No item at all
     }
 
-    private void validateStack(List<CompoundDef> compoundDefList, int worldX, int worldZ, byte surfaceIndex) {
+    private void validateStack(List<CompoundDef> compoundDefList, int worldX, int worldZ, int surfaceIndex) {
         if (compoundDefList == null) {
             return;
         }

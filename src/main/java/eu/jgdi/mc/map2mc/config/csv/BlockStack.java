@@ -5,7 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import eu.jgdi.mc.map2mc.utils.Logger;
+
 public class BlockStack {
+
+    private static Logger logger = Logger.logger();
 
     private List<String> blockIdList;
 
@@ -78,7 +82,11 @@ public class BlockStack {
                 .collect(Collectors.toList());
         for (String blockStrackAsString : blockStackAsStringList) {
             BlockStack stack = parseStack(blockStrackAsString);
-            result.add(stack);
+            if (stack != null) {
+                result.add(stack);
+            } else {
+                logger.warn("Parse failure for ''{0}'' in ''{1}''", blockStrackAsString, blockStackAsStringList);
+            }
         }
         return result;
     }

@@ -57,32 +57,41 @@ public class WorldRepository {
         Set<String> unknownBlockTypes = new HashSet<>();
 
         Map<Integer, SurfaceCsvContent.Record> map = config.getSurfaceCsvContent().getMap();
+        int row = 0;
         for (SurfaceCsvContent.Record record : map.values()) {
-
-            // Surface blocks
-            BlockStack surfaceStack = record.getSurfaceStack();
-            List<CompoundDef> surfaceCompounds = new ArrayList<>();
-            for (String blockId : surfaceStack.getBlockIdList()) {
-                if (!Block.BLOCK_INFO.containsKey(blockId)) {
-                    unknownBlockTypes.add(blockId);
-                }
-                surfaceCompounds.add(this.getBlockCompoundDef(blockId));
-            }
-            surfaceStack.setCompoundDefList(surfaceCompounds);
-
-            // Item blocks
-
-            if (record.hasItems()) {
-                for (BlockStack itemStack : record.getItemStackList()) {
-                    List<CompoundDef> itemCompounds = new ArrayList<>();
-                    for (String blockId : itemStack.getBlockIdList()) {
-                        if (!Block.BLOCK_INFO.containsKey(blockId)) {
-                            unknownBlockTypes.add(blockId);
-                        }
-                        itemCompounds.add(this.getBlockCompoundDef(blockId));
+            row++;
+            try {
+                // Surface blocks
+                BlockStack surfaceStack = record.getSurfaceStack();
+                List<CompoundDef> surfaceCompounds = new ArrayList<>();
+                for (String blockId : surfaceStack.getBlockIdList()) {
+                    if (!Block.BLOCK_INFO.containsKey(blockId)) {
+                        unknownBlockTypes.add(blockId);
                     }
-                    itemStack.setCompoundDefList(itemCompounds);
+                    surfaceCompounds.add(this.getBlockCompoundDef(blockId));
                 }
+                surfaceStack.setCompoundDefList(surfaceCompounds);
+
+                // Item blocks
+
+                if (record.hasItems()) {
+                    for (BlockStack itemStack : record.getItemStackList()) {
+                        if (itemStack == null) {
+                            throw new IllegalStateException("Item stack is <null>");
+                        }
+                        List<CompoundDef> itemCompounds = new ArrayList<>();
+                        for (String blockId : itemStack.getBlockIdList()) {
+                            if (!Block.BLOCK_INFO.containsKey(blockId)) {
+                                unknownBlockTypes.add(blockId);
+                            }
+                            itemCompounds.add(this.getBlockCompoundDef(blockId));
+                        }
+                        itemStack.setCompoundDefList(itemCompounds);
+                    }
+                }
+            } catch (Exception ex) {
+                logger.error(ex, "Failure at surface mapping record #{0}, color index {1}", row, record.getColorIndex());
+                System.exit(1);
             }
         }
         List<String> unexpectedBlocks = unknownBlockTypes.stream().distinct().sorted().collect(Collectors.toList());

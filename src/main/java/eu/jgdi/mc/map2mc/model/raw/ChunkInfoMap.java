@@ -51,24 +51,24 @@ public class ChunkInfoMap {
         return location;
     }
 
-    public byte getTerrainIndex(int x, int z) {
-        return terrainIndexField[z][x];
+    public int getTerrainIndex(int x, int z) {
+        return terrainIndexField[z][x] & 0xFF;
     }
 
-    public byte getSurfaceIndex(int x, int z) {
-        return surfaceIndexField[z][x];
+    public int getSurfaceIndex(int x, int z) {
+        return surfaceIndexField[z][x] & 0xFF;
     }
 
-    public byte getBiomeIndex(int x, int z) {
-        return biomeIndexField[z][x];
+    public int getBiomeIndex(int x, int z) {
+        return biomeIndexField[z][x] & 0xFF;
     }
 
-    public byte getMountainLevel(int x, int z) {
-        return mountainIndexField[z][x];
+    public int getMountainLevel(int x, int z) {
+        return mountainIndexField[z][x] & 0xFF;
     }
 
-    public byte getFlagField(int x, int z) {
-        return flagField[z][x];
+    public int getFlagField(int x, int z) {
+        return flagField[z][x] & 0xFF;
     }
 
     public byte[] getBytes() {
